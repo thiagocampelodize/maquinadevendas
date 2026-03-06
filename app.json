@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Máquina de Vendas",
+    "slug": "maquina-de-vendas",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/logo-app.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/logo-app.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maquinadevendas.maquinadevendas",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "predictiveBackGestureEnabled": true,
+      "package": "com.maquinadevendas.maquinadevendas"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3cd19e9f-ba54-4a60-b0ce-c0314d4d9072"
+      }
+    },
+    "owner": "maquinadevendass-organization"
+  }
+}

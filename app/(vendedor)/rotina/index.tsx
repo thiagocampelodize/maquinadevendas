@@ -1,0 +1,260 @@
+import { useRouter } from 'expo-router';
+import { BookOpen, TrendingUp, X } from 'lucide-react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Animated, Modal, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ChecklistHeader } from '@/components/checklist/ChecklistHeader';
+import { ChecklistProgress } from '@/components/checklist/ChecklistProgress';
+import { ChecklistTabs } from '@/components/checklist/ChecklistTabs';
+import { ChecklistTasks } from '@/components/checklist/ChecklistTasks';
+import { Button } from '@/components/ui/Button';
+import { useEntranceAnimation } from '@/components/ui/useEntranceAnimation';
+import { MODAL_ANIMATION_PRESETS, useModalAnimation } from '@/components/ui/useModalAnimation';
+import { ENTRANCE_ANIMATION_TOKENS } from '@/constants/animationTokens';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToastContext } from '@/contexts/ToastContext';
+import { CHECKLIST_CONTENT } from '@/data/checklistContent';
+import { useChecklistData } from '@/hooks/useChecklistData';
+import type { ChecklistItem, Period } from '@/types';
+
+export default function VendedorChecklistPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const toast = useToastContext();
+
+  const [activePeriod, setActivePeriod] = useState<Period>('morning');
+  const [selectedTask, setSelectedTask] = useState<ChecklistItem | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [hasDismissedCompletion, setHasDismissedCompletion] = useState(false);
+
+  const headerEntranceStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.routine, index: 0 });
+  const tabsEntranceStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.routine, index: 1 });
+  const progressEntranceStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.routine, index: 2 });
+  const tasksEntranceStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.routine, index: 3 });
+
+  const {
+    shouldRender: shouldRenderTaskDetailsModal,
+    animatedBackdropStyle: taskDetailsBackdropStyle,
+    animatedContentStyle: taskDetailsContentStyle,
+  } = useModalAnimation(showTaskDetailsModal, MODAL_ANIMATION_PRESETS.dialog);
+
+  const {
+    shouldRender: shouldRenderCompletionModal,
+    animatedBackdropStyle: completionBackdropStyle,
+    animatedContentStyle: completionContentStyle,
+  } = useModalAnimation(showCompletionModal, MODAL_ANIMATION_PRESETS.dialog);
+
+  const { isLoading, error, omcTasks, specificTasks, toggleOmcTask, toggleSpecificTask, reload } = useChecklistData();
+
+  const getTasksForPeriod = (period: Period) => {
+    const tasks = omcTasks.filter((task) => task.period === period);
+    return tasks.map((task) => {
+      const content = CHECKLIST_CONTENT[task.task.toLowerCase().trim()] || {
+        description: '',
+        detailedExplanation: '',
+        lessonLink: undefined,
+      };
+      return {
+        ...task,
+        description: content.description,
+        detailedExplanation: content.detailedExplanation,
+        lessonLink: content.lessonLink,
+      };
+    });
+  };
+
+  const morningTasks = useMemo(() => getTasksForPeriod('morning'), [omcTasks]);
+  const middayTasks = useMemo(() => getTasksForPeriod('midday'), [omcTasks]);
+  const afternoonTasks = useMemo(() => getTasksForPeriod('afternoon'), [omcTasks]);
+  const eveningTasks = useMemo(() => getTasksForPeriod('evening'), [omcTasks]);
+
+  const currentTasks =
+    activePeriod === 'morning'
+      ? morningTasks
+      : activePeriod === 'midday'
+        ? middayTasks
+        : activePeriod === 'afternoon'
+          ? afternoonTasks
+          : eveningTasks;
+
+  const visibleSpecificTasks = specificTasks.filter((task) => task.period === activePeriod);
+  const completedCount = currentTasks.filter((task) => task.completed).length;
+  const totalCount = currentTasks.length;
+
+  const allPeriodsComplete =
+    morningTasks.length > 0 &&
+    middayTasks.length > 0 &&
+    afternoonTasks.length > 0 &&
+    eveningTasks.length > 0 &&
+    morningTasks.every((task) => task.completed) &&
+    middayTasks.every((task) => task.completed) &&
+    afternoonTasks.every((task) => task.completed) &&
+    eveningTasks.every((task) => task.completed);
+
+  const handleToggleTask = async (id: string, type: 'omc' | 'specific') => {
+    if (type === 'omc') {
+      await toggleOmcTask(id);
+      toast.success('Tarefa atualizada!');
+      return;
+    }
+    await toggleSpecificTask(id);
+    toast.success('Tarefa específica atualizada!');
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await reload();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!allPeriodsComplete) {
+      setHasDismissedCompletion(false);
+      return;
+    }
+
+    if (!showCompletionModal && !hasDismissedCompletion) {
+      setShowCompletionModal(true);
+      toast.success('Rotina completa!');
+    }
+  }, [allPeriodsComplete, hasDismissedCompletion, isLoading, showCompletionModal, toast]);
+
+  if (!user?.company_id) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
+        <Text className="mb-2 text-xl font-bold text-white">Rotina indisponível</Text>
+        <Text className="text-center text-[#9CA3AF]">
+          Sua conta não tem empresa vinculada. É necessário ter uma empresa para gerar a rotina diária.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />}
+      >
+        <Animated.View style={headerEntranceStyle}>
+          <ChecklistHeader userRole={user?.role} />
+        </Animated.View>
+
+        <Animated.View style={tabsEntranceStyle}>
+          <ChecklistTabs activePeriod={activePeriod} setActivePeriod={setActivePeriod} />
+        </Animated.View>
+
+        <Animated.View style={progressEntranceStyle}>
+          <ChecklistProgress completedCount={completedCount} totalCount={totalCount} activePeriod={activePeriod} />
+        </Animated.View>
+
+        {isLoading ? <Text className="text-center text-[#9CA3AF]">Carregando tarefas...</Text> : null}
+        {error ? <Text className="text-center text-red-500">{error}</Text> : null}
+
+        {!isLoading ? (
+          <Animated.View style={tasksEntranceStyle}>
+            <ChecklistTasks
+              userRole={user?.role}
+              tasks={currentTasks}
+              specificTasks={visibleSpecificTasks}
+              onToggleTask={handleToggleTask}
+              onSelectTask={(task) => {
+                setSelectedTask(task);
+                setShowTaskDetailsModal(true);
+              }}
+            />
+          </Animated.View>
+        ) : null}
+
+        {completedCount === totalCount && totalCount > 0 ? (
+          <View className="rounded-xl bg-green-600 p-6 text-center">
+            <Text className="mb-1 text-center text-3xl">🎉</Text>
+            <Text className="text-center text-lg font-semibold text-white">Parabéns!</Text>
+            <Text className="text-center text-sm text-white/90">Você completou todas as tarefas do turno.</Text>
+          </View>
+        ) : null}
+
+        {allPeriodsComplete ? (
+          <View className="rounded-xl border border-green-500 bg-green-900/20 p-4">
+            <View className="mb-2 flex-row items-center gap-2">
+              <TrendingUp stroke="#22C55E" size={18} />
+              <Text className="text-base font-semibold text-green-300">Rotina completa</Text>
+            </View>
+            <Text className="text-sm text-green-200">Você concluiu os 4 turnos do dia com sucesso.</Text>
+          </View>
+        ) : null}
+      </ScrollView>
+
+      {shouldRenderCompletionModal ? (
+        <Modal
+          visible={shouldRenderCompletionModal}
+          animationType="none"
+          transparent
+          onRequestClose={() => setShowCompletionModal(false)}
+        >
+          <Animated.View className="flex-1 items-center justify-center bg-black/80 px-5" style={completionBackdropStyle}>
+            <Animated.View className="w-full rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5" style={completionContentStyle}>
+              <View className="mb-4 flex-row items-center gap-2">
+                <TrendingUp stroke="#22C55E" size={20} />
+                <Text className="text-base font-semibold text-green-300">Parabéns! Rotina completa</Text>
+              </View>
+
+              <Text className="mb-5 text-sm leading-6 text-[#a3a3a3]">
+                Você finalizou todas as tarefas de todos os turnos. O que deseja fazer agora?
+              </Text>
+
+              <View className="gap-2">
+                <Button onPress={() => router.push('/(vendedor)/diario')}>Ir para o Diário</Button>
+                <Button
+                  variant="outline"
+                  onPress={() => {
+                    setHasDismissedCompletion(true);
+                    setShowCompletionModal(false);
+                  }}
+                >
+                  Permanecer na tela
+                </Button>
+              </View>
+            </Animated.View>
+          </Animated.View>
+        </Modal>
+      ) : null}
+
+      {shouldRenderTaskDetailsModal && selectedTask ? (
+        <Modal
+          visible={shouldRenderTaskDetailsModal}
+          animationType="none"
+          transparent
+          onRequestClose={() => setShowTaskDetailsModal(false)}
+        >
+          <Animated.View className="flex-1 items-center justify-center bg-black/80 px-5" style={taskDetailsBackdropStyle}>
+            <Animated.View className="w-full rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5" style={taskDetailsContentStyle}>
+              <View className="mb-4 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-2">
+                  <BookOpen stroke="#FF6B35" size={20} />
+                  <Text className="text-base font-semibold text-white">Detalhes da tarefa</Text>
+                </View>
+                <Pressable onPress={() => setShowTaskDetailsModal(false)}>
+                  <X stroke="#FFFFFF" size={18} />
+                </Pressable>
+              </View>
+
+              <Text className="mb-2 text-base text-white">{selectedTask.task}</Text>
+              <Text className="mb-5 text-sm leading-6 text-[#a3a3a3]">
+                {selectedTask.detailedExplanation || selectedTask.description || 'Sem detalhes para esta tarefa.'}
+              </Text>
+
+              <Button onPress={() => setShowTaskDetailsModal(false)}>Entendi</Button>
+            </Animated.View>
+          </Animated.View>
+        </Modal>
+      ) : null}
+    </SafeAreaView>
+  );
+}
