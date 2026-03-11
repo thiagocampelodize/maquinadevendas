@@ -1,6 +1,7 @@
 export { authService } from './authService';
 export { companiesService } from './companiesService';
 export { goalsService } from './goalsService';
+export { periodicGoalsService } from './periodicGoalsService';
 export { usersService } from './usersService';
 export { salesService } from './salesService';
 export { checklistService } from './checklistService';

@@ -5,7 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
 import { companiesService } from '@/services/companiesService';
 import { goalsService } from '@/services/goalsService';
+import { periodicGoalsService } from '@/services/periodicGoalsService';
 import { usersService } from '@/services/usersService';
+import { getDaysInMonthFor } from '@/utils/dateUtils';
 import { parseCurrency } from '@/utils/masks';
 
 export interface OnboardingSeller {
@@ -198,6 +200,7 @@ export function useOnboarding(onComplete: () => void) {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
       const monthStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+      const daysInMonth = getDaysInMonthFor(currentYear, currentMonth);
 
       await goalsService.upsertGoal({
         company_id: companyId,
@@ -213,17 +216,35 @@ export function useOnboarding(onComplete: () => void) {
           const sanitizedName = seller.name.toLowerCase().replace(/[^a-z0-9]/g, '');
           const email = `${sanitizedName}.${Date.now()}@temp.com`;
 
-          await usersService.createUser({
+          const createdSeller = await usersService.createUser({
             email,
             full_name: seller.name,
             role: 'VENDEDOR',
             company_id: companyId,
             individual_goal: seller.individualGoal,
+            goal_2: Math.round(seller.individualGoal * 1.15),
+            super_goal: Math.round(seller.individualGoal * 1.3),
             daily_goal: seller.dailyGoal,
             daily_goal_custom: seller.dailyGoalCustom,
             working_days: seller.workingDays,
             password_hash: '123456',
           });
+
+          if (createdSeller) {
+            const goal2 = Math.round(seller.individualGoal * 1.15);
+            const superGoal = Math.round(seller.individualGoal * 1.3);
+            const dailyGoal = seller.dailyGoal ?? Math.round((seller.individualGoal / daysInMonth) * 100) / 100;
+            await periodicGoalsService.upsertMeta({
+              user_id: createdSeller.id,
+              mes_ref: monthStr,
+              meta1: seller.individualGoal,
+              meta2: goal2,
+              supermeta: superGoal,
+              daily_meta1: dailyGoal,
+              daily_meta2: Math.round((goal2 / daysInMonth) * 100) / 100,
+              daily_supermeta: Math.round((superGoal / daysInMonth) * 100) / 100,
+            });
+          }
         }
       }
 

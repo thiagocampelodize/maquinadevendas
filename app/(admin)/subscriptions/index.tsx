@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -37,31 +37,48 @@ export default function SubscriptionsManagementPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
+  const loadIdRef = useRef(0);
 
   const loadData = async (showRefresh = false) => {
-    if (showRefresh) setRefreshing(true);
-    else setLoading(true);
+    const loadId = ++loadIdRef.current;
+    const isCurrentLoad = () => loadId === loadIdRef.current;
+
+    if (showRefresh) {
+      if (isCurrentLoad()) setRefreshing(true);
+    } else if (isCurrentLoad()) {
+      setLoading(true);
+    }
 
     try {
-      setLoadError(null);
+      if (isCurrentLoad()) setLoadError(null);
       const [subscriptionData, sessionData] = await Promise.all([
         adminService.getSubscriptions(),
         adminService.getCheckoutSessions({ status: statusFilter, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined }),
       ]);
 
+      if (!isCurrentLoad()) return;
       setSubscriptions(subscriptionData);
       setSessions(sessionData);
       setPage(1);
     } catch {
-      setLoadError('Não foi possível carregar os dados de assinaturas.');
+      if (isCurrentLoad()) {
+        setLoadError('Não foi possível carregar os dados de assinaturas.');
+      }
     }
 
-    if (showRefresh) setRefreshing(false);
-    else setLoading(false);
+    if (showRefresh) {
+      if (isCurrentLoad()) setRefreshing(false);
+    } else if (isCurrentLoad()) {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     void loadData();
+
+    return () => {
+      loadIdRef.current += 1;
+    };
   }, [statusFilter, dateFrom, dateTo]);
 
   const summary = useMemo(() => {

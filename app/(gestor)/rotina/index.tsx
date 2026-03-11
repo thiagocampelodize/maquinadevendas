@@ -31,6 +31,8 @@ import { CHECKLIST_CONTENT } from "@/data/checklistContent";
 import { usersService } from "@/services/usersService";
 import type { ChecklistItem, Period } from "@/types";
 
+type SellerOption = { id: string; full_name: string };
+
 export default function GestorChecklistPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -42,7 +44,7 @@ export default function GestorChecklistPage() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
   const [hasDismissedCompletion, setHasDismissedCompletion] = useState(false);
-  const [sellers, setSellers] = useState<any[]>([]);
+  const [sellers, setSellers] = useState<SellerOption[]>([]);
   const headerEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.routine,
     index: 0,
@@ -151,15 +153,23 @@ export default function GestorChecklistPage() {
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadSellers = async () => {
       if (!user?.company_id) return;
       const data = await usersService.getSellersByCompany(user.company_id);
-      setSellers(data || []);
+      if (cancelled) return;
+      const normalized = Array.isArray(data) ? (data as SellerOption[]) : [];
+      setSellers(normalized);
     };
 
     if (showSpecificTasksModal) {
       void loadSellers();
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [showSpecificTasksModal, user?.company_id]);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DollarSign } from 'lucide-react-native';
 import { Animated, RefreshControl, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
@@ -23,6 +23,7 @@ export default function VendedorHomePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [isStartingTask, setIsStartingTask] = useState(false);
   const [showRankingModal, setShowRankingModal] = useState(false);
+  const startTaskTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const headerStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 0 });
   const metricsStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 1 });
@@ -105,8 +106,19 @@ export default function VendedorHomePage() {
   const handleStartTask = async () => {
     setIsStartingTask(true);
     router.push('/(vendedor)/rotina');
-    setTimeout(() => setIsStartingTask(false), 300);
+    if (startTaskTimeoutRef.current) {
+      clearTimeout(startTaskTimeoutRef.current);
+    }
+    startTaskTimeoutRef.current = setTimeout(() => setIsStartingTask(false), 300);
   };
+
+  useEffect(() => {
+    return () => {
+      if (startTaskTimeoutRef.current) {
+        clearTimeout(startTaskTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (!user?.company_id) {
     return (

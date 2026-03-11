@@ -1,4 +1,6 @@
 import {
+  ArrowDownRight,
+  ArrowUpRight,
   ChevronDown,
   ChevronUp,
   MessageSquare,
@@ -45,6 +47,24 @@ export function PerformanceRanking({
   const topThree = rankingByValue.slice(0, 3);
   const bottomThree = rankingByValue.slice(-3).reverse();
 
+  const getDailyGoalStatus = (seller: SellerRanking) => {
+    const goalIsValid = !!seller.hasValidGoal;
+
+    if (!goalIsValid) {
+      return {
+        hitDailyGoal: false,
+        dailyGoal: 0,
+      };
+    }
+
+    const dailyGoal = seller.goal / daysInMonth;
+
+    return {
+      hitDailyGoal: (seller.salesToday || 0) >= dailyGoal,
+      dailyGoal,
+    };
+  };
+
   const renderRow = (seller: SellerRanking, index: number, isTop: boolean) => {
     const forecast = calculateLinearProjection(
       seller.sales,
@@ -54,19 +74,104 @@ export function PerformanceRanking({
     const goalIsValid = !!seller.hasValidGoal;
     const willHitGoal = goalIsValid && forecast >= seller.goal;
     const missing = goalIsValid ? seller.goal - seller.sales : 0;
+    const { hitDailyGoal, dailyGoal } = getDailyGoalStatus(seller);
+    const cappedMissing = goalIsValid ? Math.max(0, missing) : 0;
+    const topBorderClass =
+      index === 0
+        ? "border-[#FACC15] bg-[#1f1a08]"
+        : "border-green-600/50 bg-[#102016]";
 
     return (
       <View
         key={seller.id}
-        className={`rounded-lg border p-3 ${isTop ? "border-green-600/50 bg-[#1a1a1a]" : "border-red-600/50 bg-[#1a1a1a]"}`}
+        className={`rounded-xl border ${isTop ? topBorderClass : "border-red-600/50 bg-[#1a1a1a]"} ${isTop && index === 0 ? "p-4" : "p-3"}`}
       >
         <View className="mb-3 flex-row items-center gap-3">
-          <Text className="text-lg text-[#9CA3AF]">
-            {isTop
-              ? ["🥇", "🥈", "🥉"][index]
-              : `#${salesTeam.length - bottomThree.length + index + 1}`}
-          </Text>
-          <Text className="flex-1 text-base text-white">{seller.name}</Text>
+          <View
+            className={`rounded-full px-3 py-1 ${
+              isTop
+                ? index === 0
+                  ? "bg-[#FACC15]"
+                  : "bg-green-500/15"
+                : "bg-[#262626]"
+            }`}
+          >
+            <Text
+              className={`text-[11px] font-extrabold uppercase ${
+                isTop
+                  ? index === 0
+                    ? "text-black"
+                    : "text-green-300"
+                  : "text-[#9CA3AF]"
+              }`}
+            >
+              {isTop
+                ? `${index + 1}º`
+                : `#${salesTeam.length - bottomThree.length + index + 1}`}
+            </Text>
+          </View>
+          <View className="flex-1 gap-2">
+            <Text className="text-base font-semibold text-white">{seller.name}</Text>
+            {isTop ? (
+              <View className="flex-row flex-wrap items-center gap-2">
+                <View
+                  className={`rounded-full border px-2.5 py-1 ${
+                    hitDailyGoal
+                      ? "border-green-500/30 bg-green-500/15"
+                      : "border-red-500/30 bg-red-500/15"
+                  }`}
+                >
+                  <Text
+                    className={`text-[11px] font-bold uppercase ${
+                      hitDailyGoal ? "text-green-400" : "text-red-300"
+                    }`}
+                  >
+                    {hitDailyGoal ? "Meta do Dia ✓" : "●"}
+                  </Text>
+                </View>
+                <View
+                  className={`flex-row items-center gap-1 rounded-full px-2.5 py-1 ${
+                    willHitGoal ? "bg-green-500/15" : "bg-red-500/15"
+                  }`}
+                >
+                  {willHitGoal ? (
+                    <ArrowUpRight size={14} color="#4ADE80" />
+                  ) : (
+                    <ArrowDownRight size={14} color="#FCA5A5" />
+                  )}
+                  <Text
+                    className={`text-[11px] font-bold ${
+                      willHitGoal ? "text-green-400" : "text-red-300"
+                    }`}
+                  >
+                    {willHitGoal ? "Tendencia positiva" : "Tendencia abaixo"}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
+          {!isTop ? (
+            <View
+              className={`rounded-full border px-2.5 py-1 ${
+                hitDailyGoal
+                  ? "border-green-500/30 bg-green-500/15"
+                  : "border-red-500/30 bg-red-500/15"
+              }`}
+              accessibilityLabel={
+                hitDailyGoal
+                  ? "Meta do Dia atingida"
+                  : `Meta do dia nao atingida. Vendeu ${money(seller.salesToday || 0)} de ${money(dailyGoal)}`
+              }
+            >
+              <Text
+                className={`text-[11px] font-bold uppercase ${
+                  hitDailyGoal ? "text-green-400" : "text-red-300"
+                }`}
+              >
+                {hitDailyGoal ? "Meta do Dia ✓" : "●"}
+              </Text>
+            </View>
+          ) : null}
           {showMessageAction ? (
             <Pressable
               onPress={() => onOpenMessage?.(seller)}
@@ -85,9 +190,9 @@ export function PerformanceRanking({
           />
           <MetricMini
             label="Falta"
-            value={goalIsValid ? money(missing) : "-"}
+            value={goalIsValid ? money(cappedMissing) : "-"}
             valueColor={
-              goalIsValid ? (missing <= 0 ? "#16A34A" : "#DC2626") : "#9CA3AF"
+              goalIsValid ? (cappedMissing <= 0 ? "#16A34A" : "#DC2626") : "#9CA3AF"
             }
           />
           <MetricMini

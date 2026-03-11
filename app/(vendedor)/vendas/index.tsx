@@ -1,5 +1,10 @@
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { VendedorSales } from '@/components/sales/VendedorSales';
 
 export default function VendedorSalesPage() {
-  return <VendedorSales />;
+  return (
+    <ErrorBoundary>
+      <VendedorSales />
+    </ErrorBoundary>
+  );
 }

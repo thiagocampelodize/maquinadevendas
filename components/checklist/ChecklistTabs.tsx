@@ -1,4 +1,5 @@
 import { Moon, Sun, Sunrise, Sunset } from 'lucide-react-native';
+import type { ComponentType } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import type { Period } from '@/types';
@@ -8,7 +9,9 @@ interface ChecklistTabsProps {
   setActivePeriod: (period: Period) => void;
 }
 
-const tabs: Array<{ id: Period; label: string; time: string; icon: any }> = [
+type ChecklistTabIcon = ComponentType<{ stroke?: string; size?: number }>;
+
+const tabs: Array<{ id: Period; label: string; time: string; icon: ChecklistTabIcon }> = [
   { id: 'morning', label: 'Manha', time: '08:45', icon: Sunrise },
   { id: 'midday', label: 'Meio-dia', time: '12:00', icon: Sun },
   { id: 'afternoon', label: 'Tarde', time: '17:45', icon: Sunset },

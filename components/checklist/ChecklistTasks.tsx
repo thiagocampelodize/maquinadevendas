@@ -135,12 +135,13 @@ function TaskCard({
               <Text className="text-xs text-[#FF6B35]">Ver detalhes</Text>
             </Pressable>
             {showLesson && task.lessonLink ? (
-              <Pressable
-                className="flex-row items-center gap-1"
-                onPress={() => {
-                  void Linking.openURL(task.lessonLink!);
-                }}
-              >
+                <Pressable
+                  className="flex-row items-center gap-1"
+                  onPress={() => {
+                    if (!task.lessonLink) return;
+                    void Linking.openURL(task.lessonLink);
+                  }}
+                >
                 <ExternalLink stroke="#FF6B35" size={14} />
                 <Text className="text-xs text-[#FF6B35]">Aula explicativa</Text>
               </Pressable>

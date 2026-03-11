@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, Switch, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
@@ -33,8 +33,10 @@ export default function GatewayConfigPage() {
   const [invoiceStatus, setInvoiceStatus] = useState<'pending' | 'paid' | 'overdue' | 'cancelled'>('pending');
 
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState<'ALL' | 'pending' | 'paid' | 'overdue' | 'cancelled'>('ALL');
+  const isMountedRef = useRef(true);
 
   const loadData = async () => {
+    if (!isMountedRef.current) return;
     setLoading(true);
     try {
       setLoadError(null);
@@ -43,6 +45,7 @@ export default function GatewayConfigPage() {
         companiesService.getAdminCompanies(),
       ]);
 
+      if (!isMountedRef.current) return;
       setConfigs(gatewayConfigs);
       setInvoices(gatewayInvoices);
       const companyOptions = companiesData.map((company) => ({ id: company.id, name: company.name }));
@@ -56,14 +59,22 @@ export default function GatewayConfigPage() {
         setInvoiceDueDate(nextWeek.toISOString().substring(0, 10));
       }
     } catch {
-      setLoadError('Não foi possível carregar os dados do gateway.');
+      if (isMountedRef.current) {
+        setLoadError('Não foi possível carregar os dados do gateway.');
+      }
     }
 
-    setLoading(false);
+    if (isMountedRef.current) {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     void loadData();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const filteredInvoices = useMemo(() => {
@@ -187,151 +198,164 @@ export default function GatewayConfigPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-          <Text className="text-xl font-semibold text-white">Gateway de Pagamento Asaas</Text>
-          <Text className="mt-1 text-sm text-[#9CA3AF]">Configuração por empresa, sincronização de cobranças e reconciliação.</Text>
-          <View className="mt-3 flex-row flex-wrap gap-2">
-            <Tag text={`Empresas com gateway: ${summary.enabledConfigs}`} tone="green" />
-            <Tag text={`Pendentes/vencidas: ${summary.pendingOrOverdue}`} tone="yellow" />
-            <Tag text={`Com charge id: ${summary.withGateway}`} tone="blue" />
-          </View>
-          <Button className="mt-4" loading={reconciling} onPress={() => void handleReconcile()}>
-            Reconciliar agora
-          </Button>
-        </View>
-
-        {loading ? (
-          <View className="py-8">
-            <ActivityIndicator color="#FF6B35" />
-            <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando gateway...</Text>
-          </View>
-        ) : loadError ? (
-          <View className="py-8">
-            <Text className="text-center text-sm text-[#F87171]">{loadError}</Text>
-            <Button className="mt-3" onPress={() => void loadData()}>
-              Tentar novamente
-            </Button>
-          </View>
-        ) : (
-          <>
+      <FlatList
+        data={!loading && !loadError ? filteredInvoices : []}
+        keyExtractor={(item) => item.id}
+        removeClippedSubviews
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
+        ListHeaderComponent={
+          <View className="gap-4">
             <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-              <Text className="mb-3 text-base font-semibold text-white">Configuração por empresa</Text>
-              <Select label="Empresa" value={companyId} onValueChange={setCompanyId} options={companies.map((company) => ({ label: company.name, value: company.id }))} />
-
-              <View className="mt-3 flex-row items-center justify-between rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3">
-                <Text className="text-sm text-[#D1D5DB]">Gateway ativo</Text>
-                <Switch value={enabled} onValueChange={setEnabled} trackColor={{ false: '#374151', true: '#FF6B35' }} />
+              <Text className="text-xl font-semibold text-white">Gateway de Pagamento Asaas</Text>
+              <Text className="mt-1 text-sm text-[#9CA3AF]">Configuração por empresa, sincronização de cobranças e reconciliação.</Text>
+              <View className="mt-3 flex-row flex-wrap gap-2">
+                <Tag text={`Empresas com gateway: ${summary.enabledConfigs}`} tone="green" />
+                <Tag text={`Pendentes/vencidas: ${summary.pendingOrOverdue}`} tone="yellow" />
+                <Tag text={`Com charge id: ${summary.withGateway}`} tone="blue" />
               </View>
-
-              <View className="mt-3 flex-row items-center justify-between rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3">
-                <Text className="text-sm text-[#D1D5DB]">Modo sandbox</Text>
-                <Switch value={sandbox} onValueChange={setSandbox} trackColor={{ false: '#374151', true: '#FF6B35' }} />
-              </View>
-
-              <View className="mt-3">
-                <Select
-                  label="Billing type padrao"
-                  value={billingType}
-                  onValueChange={setBillingType}
-                  options={['UNDEFINED', 'BOLETO', 'PIX', 'CREDIT_CARD'].map((value) => ({ label: value, value }))}
-                />
-              </View>
-
-              <View className="mt-3">
-                <Text className="mb-2 text-sm text-[#D1D5DB]">Webhook Secret</Text>
-                <TextInput
-                  value={webhookSecret}
-                  onChangeText={setWebhookSecret}
-                  placeholder="Token de validação"
-                  placeholderTextColor="#6B7280"
-                  className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
-                />
-              </View>
-
-              <Button className="mt-4" loading={saving} onPress={() => void handleSaveConfig()}>
-                Salvar configuração
+              <Button className="mt-4" loading={reconciling} onPress={() => void handleReconcile()}>
+                Reconciliar agora
               </Button>
             </View>
 
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-              <Text className="mb-3 text-base font-semibold text-white">Gerar fatura</Text>
-              <View className="gap-3">
-                <Select
-                  label="Empresa"
-                  value={invoiceCompanyId}
-                  onValueChange={setInvoiceCompanyId}
-                  options={companies.map((company) => ({ label: company.name, value: company.id }))}
-                  placeholder="Selecione empresa"
-                />
-                <Field label="Valor" value={invoiceAmount} onChangeText={setInvoiceAmount} placeholder="799.00" keyboardType="numeric" />
-                <Field label="Vencimento (YYYY-MM-DD)" value={invoiceDueDate} onChangeText={setInvoiceDueDate} placeholder="2026-03-20" />
-                <Select
-                  label="Status inicial"
-                  value={invoiceStatus}
-                  onValueChange={(value) => setInvoiceStatus(value as 'pending' | 'paid' | 'overdue' | 'cancelled')}
-                  options={[
-                    { label: 'Pendente', value: 'pending' },
-                    { label: 'Pago', value: 'paid' },
-                    { label: 'Vencido', value: 'overdue' },
-                    { label: 'Cancelado', value: 'cancelled' },
-                  ]}
-                />
-                <Button loading={creatingInvoice} onPress={() => void handleCreateInvoice()}>
-                  Criar fatura
-                </Button>
-              </View>
-            </View>
+            {!loading && !loadError ? (
+              <>
+                <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                  <Text className="mb-3 text-base font-semibold text-white">Configuração por empresa</Text>
+                  <Select label="Empresa" value={companyId} onValueChange={setCompanyId} options={companies.map((company) => ({ label: company.name, value: company.id }))} />
 
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-              <Select
-                label="Filtrar faturas"
-                value={invoiceStatusFilter}
-                onValueChange={(value) => setInvoiceStatusFilter(value as 'ALL' | 'pending' | 'paid' | 'overdue' | 'cancelled')}
-                options={[
-                  { label: 'Todas', value: 'ALL' },
-                  { label: 'Pendentes', value: 'pending' },
-                  { label: 'Pagas', value: 'paid' },
-                  { label: 'Vencidas', value: 'overdue' },
-                  { label: 'Canceladas', value: 'cancelled' },
-                ]}
-              />
-              <Text className="mt-2 text-xs text-[#6B7280]">{filteredInvoices.length} fatura(s) no filtro atual.</Text>
-
-              <View className="mt-3 gap-2">
-                {filteredInvoices.map((invoice) => (
-                  <View key={invoice.id} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
-                    <Text className="text-sm font-semibold text-white">{invoice.company_name}</Text>
-                    <Text className="mt-1 text-xs text-[#9CA3AF]">Vencimento: {new Date(`${invoice.due_date}T00:00:00`).toLocaleDateString('pt-BR')}</Text>
-                    <View className="mt-2 flex-row items-center justify-between">
-                      <Text className="text-xs text-white">{invoice.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
-                      <Text className={`text-xs font-semibold ${invoice.status === 'paid' ? 'text-[#34D399]' : invoice.status === 'overdue' ? 'text-[#F87171]' : invoice.status === 'pending' ? 'text-[#F59E0B]' : 'text-[#9CA3AF]'}`}>
-                        {invoice.status}
-                      </Text>
-                    </View>
-
-                    <View className="mt-3 flex-row gap-2">
-                      <Pressable
-                        className="h-9 flex-1 items-center justify-center rounded-lg border border-[#FF6B35] bg-[#2A1A12]"
-                        onPress={() => void handleSyncInvoice(invoice.id, invoice.gateway_charge_id ? 'update' : 'create')}
-                      >
-                        {syncingInvoiceId === invoice.id ? <ActivityIndicator size="small" color="#FF6B35" /> : <Text className="text-xs font-semibold text-[#FF6B35]">{invoice.gateway_charge_id ? 'Atualizar' : 'Criar'} sync</Text>}
-                      </Pressable>
-
-                      {invoice.gateway_charge_id ? (
-                        <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-[#7F1D1D] bg-[#2A0F0F]" onPress={() => void handleSyncInvoice(invoice.id, 'cancel')}>
-                          <Text className="text-xs font-semibold text-[#FCA5A5]">Cancelar no gateway</Text>
-                        </Pressable>
-                      ) : null}
-                    </View>
+                  <View className="mt-3 flex-row items-center justify-between rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3">
+                    <Text className="text-sm text-[#D1D5DB]">Gateway ativo</Text>
+                    <Switch value={enabled} onValueChange={setEnabled} trackColor={{ false: '#374151', true: '#FF6B35' }} />
                   </View>
-                ))}
-                {filteredInvoices.length === 0 ? <Text className="py-6 text-center text-sm text-[#9CA3AF]">Sem faturas para o filtro atual.</Text> : null}
-              </View>
+
+                  <View className="mt-3 flex-row items-center justify-between rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3">
+                    <Text className="text-sm text-[#D1D5DB]">Modo sandbox</Text>
+                    <Switch value={sandbox} onValueChange={setSandbox} trackColor={{ false: '#374151', true: '#FF6B35' }} />
+                  </View>
+
+                  <View className="mt-3">
+                    <Select
+                      label="Billing type padrao"
+                      value={billingType}
+                      onValueChange={setBillingType}
+                      options={['UNDEFINED', 'BOLETO', 'PIX', 'CREDIT_CARD'].map((value) => ({ label: value, value }))}
+                    />
+                  </View>
+
+                  <View className="mt-3">
+                    <Text className="mb-2 text-sm text-[#D1D5DB]">Webhook Secret</Text>
+                    <TextInput
+                      value={webhookSecret}
+                      onChangeText={setWebhookSecret}
+                      placeholder="Token de validação"
+                      placeholderTextColor="#6B7280"
+                      className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    />
+                  </View>
+
+                  <Button className="mt-4" loading={saving} onPress={() => void handleSaveConfig()}>
+                    Salvar configuração
+                  </Button>
+                </View>
+
+                <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                  <Text className="mb-3 text-base font-semibold text-white">Gerar fatura</Text>
+                  <View className="gap-3">
+                    <Select
+                      label="Empresa"
+                      value={invoiceCompanyId}
+                      onValueChange={setInvoiceCompanyId}
+                      options={companies.map((company) => ({ label: company.name, value: company.id }))}
+                      placeholder="Selecione empresa"
+                    />
+                    <Field label="Valor" value={invoiceAmount} onChangeText={setInvoiceAmount} placeholder="799.00" keyboardType="numeric" />
+                    <Field label="Vencimento (YYYY-MM-DD)" value={invoiceDueDate} onChangeText={setInvoiceDueDate} placeholder="2026-03-20" />
+                    <Select
+                      label="Status inicial"
+                      value={invoiceStatus}
+                      onValueChange={(value) => setInvoiceStatus(value as 'pending' | 'paid' | 'overdue' | 'cancelled')}
+                      options={[
+                        { label: 'Pendente', value: 'pending' },
+                        { label: 'Pago', value: 'paid' },
+                        { label: 'Vencido', value: 'overdue' },
+                        { label: 'Cancelado', value: 'cancelled' },
+                      ]}
+                    />
+                    <Button loading={creatingInvoice} onPress={() => void handleCreateInvoice()}>
+                      Criar fatura
+                    </Button>
+                  </View>
+                </View>
+
+                <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                  <Select
+                    label="Filtrar faturas"
+                    value={invoiceStatusFilter}
+                    onValueChange={(value) => setInvoiceStatusFilter(value as 'ALL' | 'pending' | 'paid' | 'overdue' | 'cancelled')}
+                    options={[
+                      { label: 'Todas', value: 'ALL' },
+                      { label: 'Pendentes', value: 'pending' },
+                      { label: 'Pagas', value: 'paid' },
+                      { label: 'Vencidas', value: 'overdue' },
+                      { label: 'Canceladas', value: 'cancelled' },
+                    ]}
+                  />
+                  <Text className="mt-2 text-xs text-[#6B7280]">{filteredInvoices.length} fatura(s) no filtro atual.</Text>
+                </View>
+              </>
+            ) : null}
+          </View>
+        }
+        ItemSeparatorComponent={() => <View className="h-2" />}
+        renderItem={({ item: invoice }) => (
+          <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+            <Text className="text-sm font-semibold text-white">{invoice.company_name}</Text>
+            <Text className="mt-1 text-xs text-[#9CA3AF]">Vencimento: {new Date(`${invoice.due_date}T00:00:00`).toLocaleDateString('pt-BR')}</Text>
+            <View className="mt-2 flex-row items-center justify-between">
+              <Text className="text-xs text-white">{invoice.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
+              <Text className={`text-xs font-semibold ${invoice.status === 'paid' ? 'text-[#34D399]' : invoice.status === 'overdue' ? 'text-[#F87171]' : invoice.status === 'pending' ? 'text-[#F59E0B]' : 'text-[#9CA3AF]'}`}>
+                {invoice.status}
+              </Text>
             </View>
-          </>
+
+            <View className="mt-3 flex-row gap-2">
+              <Pressable
+                className="h-9 flex-1 items-center justify-center rounded-lg border border-[#FF6B35] bg-[#2A1A12]"
+                onPress={() => void handleSyncInvoice(invoice.id, invoice.gateway_charge_id ? 'update' : 'create')}
+              >
+                {syncingInvoiceId === invoice.id ? <ActivityIndicator size="small" color="#FF6B35" /> : <Text className="text-xs font-semibold text-[#FF6B35]">{invoice.gateway_charge_id ? 'Atualizar' : 'Criar'} sync</Text>}
+              </Pressable>
+
+              {invoice.gateway_charge_id ? (
+                <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-[#7F1D1D] bg-[#2A0F0F]" onPress={() => void handleSyncInvoice(invoice.id, 'cancel')}>
+                  <Text className="text-xs font-semibold text-[#FCA5A5]">Cancelar no gateway</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
         )}
-      </ScrollView>
+        ListEmptyComponent={
+          loading ? (
+            <View className="py-8">
+              <ActivityIndicator color="#FF6B35" />
+              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando gateway...</Text>
+            </View>
+          ) : loadError ? (
+            <View className="py-8">
+              <Text className="text-center text-sm text-[#F87171]">{loadError}</Text>
+              <Button className="mt-3" onPress={() => void loadData()}>
+                Tentar novamente
+              </Button>
+            </View>
+          ) : (
+            <Text className="py-6 text-center text-sm text-[#9CA3AF]">Sem faturas para o filtro atual.</Text>
+          )
+        }
+      />
     </SafeAreaView>
   );
 }

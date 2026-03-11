@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import {
   Animated,
@@ -11,12 +11,14 @@ import {
 } from "react-native";
 
 import { ForecastAuditModal } from "@/components/home/ForecastAuditModal";
+import { CriticalGoalBanner } from "@/components/home/CriticalGoalBanner";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeMetrics } from "@/components/home/HomeMetrics";
 import { HomeQuickActions } from "@/components/home/HomeQuickActions";
 import { Messages } from "@/components/home/Messages";
 import { MethodAdherenceReport } from "@/components/home/MethodAdherenceReport";
 import { PerformanceRanking } from "@/components/home/PerformanceRanking";
+import { RepresentativesSummary } from "@/components/home/RepresentativesSummary";
 import { RankingModal } from "@/components/home/RankingModal";
 import { GlobalMessageModal } from "@/components/modals/GlobalMessageModal";
 import { SendMessageModal } from "@/components/modals/SendMessageModal";
@@ -24,6 +26,7 @@ import { useEntranceAnimation } from "@/components/ui/useEntranceAnimation";
 import { ENTRANCE_ANIMATION_TOKENS } from "@/constants/animationTokens";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { companiesService } from "@/services/companiesService";
 import type { SellerRanking } from "@/types";
 
 export default function GestorHomePage() {
@@ -39,6 +42,9 @@ export default function GestorHomePage() {
   const [showForecastAuditModal, setShowForecastAuditModal] = useState(false);
   const [showGlobalMessageModal, setShowGlobalMessageModal] = useState(false);
   const [showSendMessageModal, setShowSendMessageModal] = useState(false);
+  const startTaskTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [companyName, setCompanyName] = useState("Operacao");
+  const [isCriticalBannerDismissed, setIsCriticalBannerDismissed] = useState(false);
   const [selectedSellerForMessage, setSelectedSellerForMessage] =
     useState<SellerRanking | null>(null);
   const headerEntranceStyle = useEntranceAnimation({
@@ -71,10 +77,57 @@ export default function GestorHomePage() {
     metGoalProjectedCount,
     metGoalProjectedRevenue,
     metGoalProjectedRevenueShare,
+    totalReturns,
+    returnsShare,
+    totalSellers,
     currentDay,
     daysInMonth,
     reload,
   } = useDashboardData();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCompanyName = async () => {
+      if (!user?.company_id) {
+        if (isMounted) setCompanyName("Operacao");
+        return;
+      }
+
+      const company = await companiesService.getCompanyById(user.company_id);
+      if (isMounted) {
+        setCompanyName(company?.name || "Operacao");
+      }
+    };
+
+    void loadCompanyName();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.company_id]);
+
+  useEffect(() => {
+    setIsCriticalBannerDismissed(false);
+  }, [user?.company_id]);
+
+  const proportionalGoal = useMemo(
+    () => (monthlyGoal > 0 ? monthlyGoal * (currentDay / daysInMonth) : 0),
+    [currentDay, daysInMonth, monthlyGoal],
+  );
+  const proportionalPercentage = useMemo(
+    () => (proportionalGoal > 0 ? (currentSales / proportionalGoal) * 100 : 0),
+    [currentSales, proportionalGoal],
+  );
+  const missingAmount = useMemo(
+    () => Math.max(0, monthlyGoal - currentSales),
+    [currentSales, monthlyGoal],
+  );
+  const shouldShowCriticalBanner =
+    monthlyGoal > 0 &&
+    proportionalPercentage < 60 &&
+    missingAmount > 0 &&
+    !isCriticalBannerDismissed;
 
   const status = useMemo(() => {
     if (monthlyGoal === 0) {
@@ -89,6 +142,21 @@ export default function GestorHomePage() {
     const percentageNeeded = (monthlyGoal / daysInMonth) * currentDay;
     const performance =
       percentageNeeded > 0 ? (currentSales / percentageNeeded) * 100 : 0;
+
+    if (shouldShowCriticalBanner) {
+      return {
+        color: "bg-[#FF6B35]",
+        title: "Panorama do Mes",
+        subtitle: `${user?.name || "Gestor"} • Projecao ${projection.toLocaleString(
+          "pt-BR",
+          {
+            style: "currency",
+            currency: "BRL",
+            minimumFractionDigits: 2,
+          },
+        )}`,
+      };
+    }
 
     if (performance >= 100) {
       return {
@@ -130,7 +198,7 @@ export default function GestorHomePage() {
         minimumFractionDigits: 2,
       })}`,
     };
-  }, [currentSales, monthlyGoal, projection, user?.name]);
+  }, [currentDay, currentSales, daysInMonth, monthlyGoal, projection, shouldShowCriticalBanner, user?.name]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -141,8 +209,19 @@ export default function GestorHomePage() {
   const handleStartTask = useCallback(async () => {
     setIsStartingTask(true);
     router.push("/(gestor)/rotina");
-    setTimeout(() => setIsStartingTask(false), 300);
+    if (startTaskTimeoutRef.current) {
+      clearTimeout(startTaskTimeoutRef.current);
+    }
+    startTaskTimeoutRef.current = setTimeout(() => setIsStartingTask(false), 300);
   }, [router]);
+
+  useEffect(() => {
+    return () => {
+      if (startTaskTimeoutRef.current) {
+        clearTimeout(startTaskTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleOpenMessage = useCallback((seller: SellerRanking) => {
     setSelectedSellerForMessage(seller);
@@ -183,6 +262,14 @@ export default function GestorHomePage() {
 
   return (
     <SafeAreaView className="flex-1 bg-black">
+      {shouldShowCriticalBanner ? (
+        <CriticalGoalBanner
+          companyName={companyName}
+          missingAmount={missingAmount}
+          onDismiss={() => setIsCriticalBannerDismissed(true)}
+        />
+      ) : null}
+
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}
@@ -194,13 +281,15 @@ export default function GestorHomePage() {
           />
         }
       >
-        <Animated.View style={headerEntranceStyle}>
-          <HomeHeader
-            statusTitle={status.title}
-            statusSubtitle={status.subtitle}
-            statusColor={status.color}
-          />
-        </Animated.View>
+        {!shouldShowCriticalBanner ? (
+          <Animated.View style={headerEntranceStyle}>
+            <HomeHeader
+              statusTitle={status.title}
+              statusSubtitle={status.subtitle}
+              statusColor={status.color}
+            />
+          </Animated.View>
+        ) : null}
         <Animated.View style={metricsEntranceStyle}>
           <HomeMetrics
             monthlyGoal={monthlyGoal}
@@ -217,6 +306,13 @@ export default function GestorHomePage() {
             daysInMonth={daysInMonth}
           />
         </Animated.View>
+
+        <RepresentativesSummary
+          totalReturns={totalReturns}
+          returnsShare={returnsShare}
+          sellersHitGoalCount={metGoalReachedCount}
+          totalSellers={totalSellers}
+        />
 
         <View style={{ flexDirection: isDesktop ? "row" : "column", gap: 16 }}>
           <Animated.View style={[{ flex: isDesktop ? 2 : 1 }, rankingEntranceStyle]}>

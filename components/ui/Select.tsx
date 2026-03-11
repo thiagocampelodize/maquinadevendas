@@ -15,9 +15,10 @@ interface SelectProps {
   options: SelectOption[];
   placeholder?: string;
   onValueChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-export function Select({ label, value, options, placeholder = 'Selecione...', onValueChange }: SelectProps) {
+export function Select({ label, value, options, placeholder = 'Selecione...', onValueChange, disabled = false }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [motionOffset, setMotionOffset] = useState(-6);
   const [dropdownLayout, setDropdownLayout] = useState({ x: 0, y: 0, width: 0, maxHeight: 220 });
@@ -57,13 +58,16 @@ export function Select({ label, value, options, placeholder = 'Selecione...', on
 
       <Pressable
         onPress={() => {
+          if (disabled) {
+            return;
+          }
           if (open) {
             closeDropdown();
           } else {
             openDropdown();
           }
         }}
-        className="h-12 flex-row items-center justify-between rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3"
+        className={`h-12 flex-row items-center justify-between rounded-lg border border-[#2D2D2D] px-3 ${disabled ? 'bg-[#141414] opacity-50' : 'bg-[#1A1A1A]'}`}
       >
         <Text className={`${value ? 'text-white' : 'text-[#6B7280]'}`}>{selectedLabel}</Text>
         <ChevronDown stroke="#9CA3AF" size={16} />

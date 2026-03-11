@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import Toast from 'react-native-toast-message';
 
 interface ToastContextType {
@@ -11,22 +11,27 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const show = (
+  const show = useCallback((
     type: 'success' | 'error' | 'info',
     title: string,
     options?: { message?: string }
   ) => {
     Toast.show({ type, text1: title, text2: options?.message });
-  };
+  }, []);
+
+  const value = useMemo<ToastContextType>(
+    () => ({
+      success: (title, options) => show('success', title, options),
+      error: (title, options) => show('error', title, options),
+      warning: (title, options) => show('info', title, options),
+      info: (title, options) => show('info', title, options),
+    }),
+    [show]
+  );
 
   return (
     <ToastContext.Provider
-      value={{
-        success: (title, options) => show('success', title, options),
-        error: (title, options) => show('error', title, options),
-        warning: (title, options) => show('info', title, options),
-        info: (title, options) => show('info', title, options),
-      }}
+      value={value}
     >
       {children}
     </ToastContext.Provider>

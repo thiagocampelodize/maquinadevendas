@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { Check, Copy, Send, X } from 'lucide-react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,18 +41,40 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
   const [isSending, setIsSending] = useState(false);
   const [copied, setCopied] = useState(false);
   const [customMessage, setCustomMessage] = useState('');
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    let cancelled = false;
+
     const load = async () => {
       setIsLoading(true);
-      const data = await messageTemplatesService.getTemplates(companyId);
-      setTemplates(data);
-      if (data[0]) setSelectedTemplateId(data[0].id);
-      setIsLoading(false);
+      try {
+        const data = await messageTemplatesService.getTemplates(companyId);
+        if (cancelled) return;
+        const normalizedTemplates = Array.isArray(data) ? data : [];
+        setTemplates(normalizedTemplates);
+        if (normalizedTemplates[0]) setSelectedTemplateId(normalizedTemplates[0].id);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
     };
     void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [companyId, isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const categories = [
     { value: 'all', label: 'Todas' },
@@ -87,7 +109,10 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
       await Clipboard.setStringAsync(renderedMessage);
       setCopied(true);
       toast.success('Mensagem copiada!');
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Erro ao copiar');
     }

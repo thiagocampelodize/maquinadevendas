@@ -1,6 +1,6 @@
 import { subDays, format } from 'date-fns';
 import { X } from 'lucide-react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,17 +32,25 @@ export function MethodAdherenceReport({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [periodProgress, setPeriodProgress] = useState<PeriodProgress[]>([]);
+  const loadIdRef = useRef(0);
 
   const loadData = async () => {
+    const loadId = ++loadIdRef.current;
+    const isCurrentLoad = () => loadId === loadIdRef.current;
+
     if (!userId || !companyId) {
-      setLoading(false);
-      setError('Sessao sem usuario/empresa para carregar adesao.');
+      if (isCurrentLoad()) {
+        setLoading(false);
+        setError('Sessao sem usuario/empresa para carregar adesao.');
+      }
       return;
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      if (isCurrentLoad()) {
+        setLoading(true);
+        setError(null);
+      }
 
       const today = getBrazilDate();
       const start = subDays(today, 6);
@@ -51,18 +59,28 @@ export function MethodAdherenceReport({
 
       const taskType = userRole === 'VENDEDOR' ? 'vendedor' : 'omc';
       const data = await checklistService.getPeriodProgress(userId, companyId, startDate, endDate, taskType);
-      setPeriodProgress(data);
-    } catch (err: any) {
+      if (isCurrentLoad()) {
+        setPeriodProgress(data);
+      }
+    } catch (err: unknown) {
       console.error('MethodAdherenceReport loadData error:', err);
-      setError(err?.message || 'Erro ao carregar relatorio de adesao');
+      if (isCurrentLoad()) {
+        setError(err instanceof Error ? err.message : 'Erro ao carregar relatorio de adesao');
+      }
     } finally {
-      setLoading(false);
+      if (isCurrentLoad()) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     if (!isOpen) return;
     void loadData();
+
+    return () => {
+      loadIdRef.current += 1;
+    };
   }, [companyId, isOpen, userId, userRole]);
 
   const overall = useMemo(() => {

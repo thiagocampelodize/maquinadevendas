@@ -34,7 +34,7 @@ export function ForecastAuditModal({
   );
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'will_hit' | 'wont_hit'>('all');
-  const [sortBy, setSortBy] = useState<'projection_desc' | 'missing_desc' | 'name_asc' | 'sales_desc'>(
+  const [sortBy, setSortBy] = useState<'projection_desc' | 'missing_desc' | 'name_asc' | 'sales_desc' | 'goal_desc'>(
     'projection_desc'
   );
 
@@ -81,12 +81,13 @@ export function ForecastAuditModal({
       return row.seller.name.toLowerCase().includes(search.toLowerCase().trim());
     });
 
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortBy === 'projection_desc') return b.metrics.projection - a.metrics.projection;
-      if (sortBy === 'missing_desc') return b.missing - a.missing;
-      if (sortBy === 'sales_desc') return b.metrics.currentSales - a.metrics.currentSales;
-      return a.seller.name.localeCompare(b.seller.name, 'pt-BR');
-    });
+      const sorted = [...filtered].sort((a, b) => {
+        if (sortBy === 'projection_desc') return b.metrics.projection - a.metrics.projection;
+        if (sortBy === 'missing_desc') return b.missing - a.missing;
+        if (sortBy === 'sales_desc') return b.metrics.currentSales - a.metrics.currentSales;
+        if (sortBy === 'goal_desc') return b.metrics.monthlyGoal - a.metrics.monthlyGoal;
+        return a.seller.name.localeCompare(b.seller.name, 'pt-BR');
+      });
 
     return { summary, rows: sorted };
   }, [currentDay, daysInMonth, salesTeam, search, sortBy, statusFilter]);
@@ -165,6 +166,11 @@ export function ForecastAuditModal({
                   label="Maior vendido"
                   active={sortBy === 'sales_desc'}
                   onPress={() => setSortBy('sales_desc')}
+                />
+                <FilterPill
+                  label="Maior meta"
+                  active={sortBy === 'goal_desc'}
+                  onPress={() => setSortBy('goal_desc')}
                 />
                 <FilterPill
                   label="Nome A-Z"

@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { SafeAreaView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Step2Goals } from '@/components/onboarding/Step2Goals';
 import { SubmenuBackButton } from '@/components/ui/SubmenuBackButton';
@@ -12,7 +13,7 @@ export default function OnboardingStep2() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black" edges={['top', 'left', 'right']}>
       <View className="border-b border-[#404040] bg-[#1a1a1a] px-6 py-4">
         <View className="mb-2 flex-row items-center justify-between">
           <Text className="text-sm text-[#9CA3AF]">Passo 2 de 3</Text>

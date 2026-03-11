@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Trash2, User2, UserPlus, Users } from 'lucide-react-native';
-import { ActivityIndicator, Alert, Animated, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, FlatList, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
@@ -35,12 +35,15 @@ export default function UsersManagementPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>('VENDEDOR');
   const [selectedStatus, setSelectedStatus] = useState<'Ativo' | 'Inativo'>('Ativo');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const isMountedRef = useRef(true);
 
   const { shouldRender, animatedBackdropStyle, animatedContentStyle } = useModalAnimation(isModalOpen, MODAL_ANIMATION_PRESETS.sheet);
 
   const loadData = async () => {
+    if (!isMountedRef.current) return;
     setLoading(true);
     const [usersData, companiesData] = await Promise.all([usersService.getAdminUsers(), companiesService.getAdminCompanies()]);
+    if (!isMountedRef.current) return;
     setUsers(usersData);
     setCompanies(companiesData);
     setLoading(false);
@@ -48,6 +51,10 @@ export default function UsersManagementPage() {
 
   useEffect(() => {
     void loadData();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const filtered = useMemo(() => {
@@ -173,112 +180,126 @@ export default function UsersManagementPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-          <View className="flex-row items-center justify-between gap-3">
-            <View className="flex-1">
-              <Text className="text-xl font-semibold text-white">Gerenciar Usuários</Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">Controle de perfis administrativos, gestores e vendedores.</Text>
-            </View>
-            <Pressable className="h-10 flex-row items-center gap-2 rounded-xl bg-[#FF6B35] px-3" onPress={openNewModal}>
-              <UserPlus size={14} color="#FFFFFF" />
-              <Text className="text-sm font-semibold text-white">Novo</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View className="gap-3">
-          <AdminStatCard title="Total" value={`${users.length}`} icon={Users} tone="gray" />
-          <AdminStatCard title="Admin" value={`${users.filter((item) => item.role === 'ADMIN').length}`} icon={User2} tone="blue" />
-          <AdminStatCard title="Gestor" value={`${users.filter((item) => item.role === 'GESTOR').length}`} icon={User2} tone="orange" />
-          <AdminStatCard title="Vendedor" value={`${users.filter((item) => item.role === 'VENDEDOR').length}`} icon={User2} tone="green" />
-        </View>
-
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-          <Text className="mb-3 text-base font-semibold text-white">Filtros</Text>
-          <View className="gap-3">
-            <Select
-              label="Perfil"
-              value={role}
-              onValueChange={setRole}
-              options={['Todos', 'Admin', 'Gestor', 'Vendedor'].map((value) => ({ label: value, value }))}
-            />
-            <Select
-              label="Status"
-              value={status}
-              onValueChange={setStatus}
-              options={['Todos', 'Ativo', 'Inativo'].map((value) => ({ label: value, value }))}
-            />
-            <View>
-              <Text className="mb-2 text-sm text-[#D1D5DB]">Buscar</Text>
-              <View className="h-12 flex-row items-center rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3">
-                <Search size={16} color="#6B7280" />
-                <TextInput
-                  className="ml-2 flex-1 text-white"
-                  placeholder="Nome, email ou empresa"
-                  placeholderTextColor="#6B7280"
-                  value={search}
-                  onChangeText={setSearch}
-                />
+      <FlatList
+        data={loading ? [] : filtered}
+        keyExtractor={(item) => item.id}
+        removeClippedSubviews
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
+        ListHeaderComponent={
+          <View className="gap-4">
+            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+              <View className="flex-row items-center justify-between gap-3">
+                <View className="flex-1">
+                  <Text className="text-xl font-semibold text-white">Gerenciar Usuários</Text>
+                  <Text className="mt-1 text-sm text-[#9CA3AF]">Controle de perfis administrativos, gestores e vendedores.</Text>
+                </View>
+                <Pressable className="h-10 flex-row items-center gap-2 rounded-xl bg-[#FF6B35] px-3" onPress={openNewModal}>
+                  <UserPlus size={14} color="#FFFFFF" />
+                  <Text className="text-sm font-semibold text-white">Novo</Text>
+                </Pressable>
               </View>
             </View>
+
+            <View className="gap-3">
+              <AdminStatCard title="Total" value={`${users.length}`} icon={Users} tone="gray" />
+              <AdminStatCard title="Admin" value={`${users.filter((item) => item.role === 'ADMIN').length}`} icon={User2} tone="blue" />
+              <AdminStatCard title="Gestor" value={`${users.filter((item) => item.role === 'GESTOR').length}`} icon={User2} tone="orange" />
+              <AdminStatCard title="Vendedor" value={`${users.filter((item) => item.role === 'VENDEDOR').length}`} icon={User2} tone="green" />
+            </View>
+
+            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+              <Text className="mb-3 text-base font-semibold text-white">Filtros</Text>
+              <View className="gap-3">
+                <Select
+                  label="Perfil"
+                  value={role}
+                  onValueChange={setRole}
+                  options={['Todos', 'Admin', 'Gestor', 'Vendedor'].map((value) => ({ label: value, value }))}
+                />
+                <Select
+                  label="Status"
+                  value={status}
+                  onValueChange={setStatus}
+                  options={['Todos', 'Ativo', 'Inativo'].map((value) => ({ label: value, value }))}
+                />
+                <View>
+                  <Text className="mb-2 text-sm text-[#D1D5DB]">Buscar</Text>
+                  <View className="h-12 flex-row items-center rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3">
+                    <Search size={16} color="#6B7280" />
+                    <TextInput
+                      className="ml-2 flex-1 text-white"
+                      placeholder="Nome, email ou empresa"
+                      placeholderTextColor="#6B7280"
+                      value={search}
+                      onChangeText={setSearch}
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+              <Text className="text-base font-semibold text-white">Usuários</Text>
+              <Text className="mt-1 text-xs text-[#6B7280]">{filtered.length} registro(s) encontrado(s).</Text>
+            </View>
           </View>
-        </View>
+        }
+        ItemSeparatorComponent={() => <View className="h-2" />}
+        renderItem={({ item: user }) => (
+          <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+            <View className="flex-row items-center gap-3">
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF6B35]">
+                <Text className="text-xs font-bold text-white">{initialsFromName(user.name)}</Text>
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-white">{user.name}</Text>
+                <Text className="text-xs text-[#9CA3AF]">{user.email}</Text>
+              </View>
+            </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-          <Text className="text-base font-semibold text-white">Usuários</Text>
-          <Text className="mt-1 text-xs text-[#6B7280]">{filtered.length} registro(s) encontrado(s).</Text>
+            <View className="mt-3 flex-row items-center justify-between gap-2">
+              <Text className="flex-1 text-xs text-[#9CA3AF]">{user.company}</Text>
+              <Text className="text-xs font-semibold text-[#FF6B35]">{roleLabel(user.role)}</Text>
+              <Text className={`text-xs font-semibold ${user.status === 'Ativo' ? 'text-[#34D399]' : 'text-[#9CA3AF]'}`}>{user.status}</Text>
+            </View>
 
-          {loading ? (
+            <View className="mt-3 flex-row gap-2">
+              <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-[#2D2D2D] bg-[#111111]" onPress={() => openEditModal(user)}>
+                <Text className="text-xs font-semibold text-[#D1D5DB]">Editar</Text>
+              </Pressable>
+              <Pressable
+                className={`h-9 flex-1 items-center justify-center rounded-lg border ${user.status === 'Ativo' ? 'border-red-900 bg-[#2A0F0F]' : 'border-green-900 bg-[#0F2A16]'}`}
+                onPress={() => void toggleUser(user)}
+              >
+                <Text className={`text-xs font-semibold ${user.status === 'Ativo' ? 'text-red-300' : 'text-green-300'}`}>
+                  {user.status === 'Ativo' ? 'Inativar' : 'Ativar'}
+                </Text>
+              </Pressable>
+              <Pressable
+                className="h-9 w-11 items-center justify-center rounded-lg border border-[#7F1D1D] bg-[#2A0F0F]"
+                onPress={() => askDelete(user)}
+              >
+                {deletingId === user.id ? <ActivityIndicator size="small" color="#FCA5A5" /> : <Trash2 size={13} color="#FCA5A5" />}
+              </Pressable>
+            </View>
+          </View>
+        )}
+        ListEmptyComponent={
+          loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
               <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando usuários...</Text>
             </View>
           ) : (
-            <View className="mt-3 gap-2">
-              {filtered.map((user) => (
-                <View key={user.id} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
-                  <View className="flex-row items-center gap-3">
-                    <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF6B35]">
-                      <Text className="text-xs font-bold text-white">{initialsFromName(user.name)}</Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-sm font-semibold text-white">{user.name}</Text>
-                      <Text className="text-xs text-[#9CA3AF]">{user.email}</Text>
-                    </View>
-                  </View>
-
-                  <View className="mt-3 flex-row items-center justify-between gap-2">
-                    <Text className="flex-1 text-xs text-[#9CA3AF]">{user.company}</Text>
-                    <Text className="text-xs font-semibold text-[#FF6B35]">{roleLabel(user.role)}</Text>
-                    <Text className={`text-xs font-semibold ${user.status === 'Ativo' ? 'text-[#34D399]' : 'text-[#9CA3AF]'}`}>{user.status}</Text>
-                  </View>
-
-                  <View className="mt-3 flex-row gap-2">
-                    <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-[#2D2D2D] bg-[#111111]" onPress={() => openEditModal(user)}>
-              <Text className="text-xs font-semibold text-[#D1D5DB]">Editar</Text>
-                    </Pressable>
-                    <Pressable
-                      className={`h-9 flex-1 items-center justify-center rounded-lg border ${user.status === 'Ativo' ? 'border-red-900 bg-[#2A0F0F]' : 'border-green-900 bg-[#0F2A16]'}`}
-                      onPress={() => void toggleUser(user)}
-                    >
-                      <Text className={`text-xs font-semibold ${user.status === 'Ativo' ? 'text-red-300' : 'text-green-300'}`}>
-                        {user.status === 'Ativo' ? 'Inativar' : 'Ativar'}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      className="h-9 w-11 items-center justify-center rounded-lg border border-[#7F1D1D] bg-[#2A0F0F]"
-                      onPress={() => askDelete(user)}
-                    >
-                      {deletingId === user.id ? <ActivityIndicator size="small" color="#FCA5A5" /> : <Trash2 size={13} color="#FCA5A5" />}
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
+            <View className="rounded-xl border border-[#2D2D2D] bg-[#111111] p-4">
+              <Text className="text-center text-sm text-[#9CA3AF]">Nenhum usuário encontrado para os filtros.</Text>
             </View>
-          )}
-        </View>
-      </ScrollView>
+          )
+        }
+      />
 
       {shouldRender ? (
         <Modal visible={shouldRender} transparent animationType="none" onRequestClose={() => setIsModalOpen(false)}>

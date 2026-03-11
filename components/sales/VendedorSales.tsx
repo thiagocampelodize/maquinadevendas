@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BarChart3, CalendarDays, Edit2, Trash2, TrendingUp, X } from 'lucide-react-native';
 import {
   ActivityIndicator,
   Animated,
+  FlatList,
   Modal,
   Pressable,
   RefreshControl,
@@ -22,10 +23,13 @@ import { MODAL_ANIMATION_PRESETS, useModalAnimation } from '@/components/ui/useM
 import { ENTRANCE_ANIMATION_TOKENS } from '@/constants/animationTokens';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
+import { periodicGoalsService } from '@/services/periodicGoalsService';
 import { salesService, type Sale } from '@/services/salesService';
 import { settingsService } from '@/services/settingsService';
 import { usersService } from '@/services/usersService';
-import { getBrazilDateString, getRetroactiveStartDate } from '@/utils/dateUtils';
+import { hasValidGoal } from '@/utils/goalUtils';
+import { resolveSellerGoals } from '@/utils/periodicGoals';
+import { getBrazilDateString, getDaysInMonthFor, getRetroactiveStartDate } from '@/utils/dateUtils';
 import { formatCurrency, parseCurrency } from '@/utils/masks';
 
 type Shift = 'morning' | 'noon' | 'afternoon' | 'night';
@@ -47,6 +51,7 @@ export function VendedorSales() {
   const [salePendingDelete, setSalePendingDelete] = useState<Sale | null>(null);
   const [isDeletingSale, setIsDeletingSale] = useState(false);
   const [retroactiveDaysLimit, setRetroactiveDaysLimit] = useState(30);
+  const loadIdRef = useRef(0);
 
   const panelStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.sales, index: 0 });
   const actionStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.sales, index: 1 });
@@ -58,39 +63,64 @@ export function VendedorSales() {
   const minDate = getRetroactiveStartDate(retroactiveDaysLimit);
 
   const loadData = async () => {
+    const loadId = ++loadIdRef.current;
+    const isCurrentLoad = () => loadId === loadIdRef.current;
+
     if (!companyId || !userId) {
-      setIsLoading(false);
+      if (isCurrentLoad()) setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
+    if (isCurrentLoad()) setIsLoading(true);
     try {
+      const monthKey = selectedDate.slice(0, 7);
+      const [year, month] = monthKey.split('-').map(Number);
+      const daysInMonth = getDaysInMonthFor(year, Math.max(0, month - 1));
+
       const [userRow, daySalesAll, monthSalesAll, daysLimit] = await Promise.all([
         usersService.getUserById(userId),
         salesService.getSalesByDate(companyId, selectedDate),
-        salesService.getMonthSales(companyId),
+        salesService.getMonthSales(companyId, monthKey),
         settingsService.getRetroactiveDaysLimit(companyId),
       ]);
+      if (!isCurrentLoad()) return;
       setRetroactiveDaysLimit(daysLimit);
 
-      const mineDay = daySalesAll.filter((sale) => sale.seller_id === userId);
-      const mineMonth = monthSalesAll.filter((sale) => sale.seller_id === userId);
+      const normalizedDaySales = Array.isArray(daySalesAll) ? daySalesAll : [];
+      const normalizedMonthSales = Array.isArray(monthSalesAll) ? monthSalesAll : [];
+      const mineDay = normalizedDaySales.filter((sale) => sale.seller_id === userId);
+      const mineMonth = normalizedMonthSales.filter((sale) => sale.seller_id === userId);
 
+      if (!isCurrentLoad()) return;
       setSales(mineDay);
       setMonthSalesTotal(mineMonth.reduce((acc, sale) => acc + sale.value, 0));
       setMonthSalesCount(mineMonth.length);
 
-      const profileDailyGoal = Number(userRow?.daily_goal || 0);
-      const profileMonthGoal = Number(userRow?.individual_goal || 0);
-      const computedDaily = profileDailyGoal > 0 ? profileDailyGoal : profileMonthGoal > 0 ? profileMonthGoal / 22 : 0;
-      setDailyGoal(computedDaily);
+      const periodicGoal = await periodicGoalsService.getMetaPorPeriodo(userId, monthKey);
+      const effectivePeriodicGoal =
+        periodicGoal ||
+        (hasValidGoal(userRow?.individual_goal)
+          ? await periodicGoalsService.upsertMeta(userId, monthKey, Number(userRow?.individual_goal || 0))
+          : null);
+
+      const resolvedGoals = resolveSellerGoals({
+        seller: userRow || { id: userId },
+        periodicGoal: effectivePeriodicGoal || undefined,
+        daysInMonth,
+      });
+
+      if (isCurrentLoad()) setDailyGoal(resolvedGoals.dailyGoal);
     } finally {
-      setIsLoading(false);
+      if (isCurrentLoad()) setIsLoading(false);
     }
   };
 
   useEffect(() => {
     void loadData();
+
+    return () => {
+      loadIdRef.current += 1;
+    };
   }, [companyId, userId, selectedDate]);
 
   const onRefresh = async () => {
@@ -213,9 +243,17 @@ export function VendedorSales() {
                 </Text>
               </View>
             ) : (
-              <View className="gap-2">
-                {sales.map((sale) => (
-                  <View key={sale.id} className="rounded-lg border border-[#404040] bg-[#262626] p-3">
+              <FlatList
+                data={sales}
+                keyExtractor={(sale) => sale.id}
+                scrollEnabled={false}
+                removeClippedSubviews
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={5}
+                ItemSeparatorComponent={() => <View className="h-2" />}
+                renderItem={({ item: sale }) => (
+                  <View className="rounded-lg border border-[#404040] bg-[#262626] p-3">
                     <View className="flex-row items-start justify-between gap-2">
                       <View className="flex-1">
                         <Text className={`${sale.value < 0 ? 'text-red-500' : 'text-white'} text-base font-semibold`}>
@@ -238,8 +276,8 @@ export function VendedorSales() {
                       </View>
                     </View>
                   </View>
-                ))}
-              </View>
+                )}
+              />
             )}
           </Animated.View>
         </>

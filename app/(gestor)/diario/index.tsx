@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useMemo, useState } from 'react';
 import {
   CalendarDays,
@@ -34,6 +33,10 @@ import { calculateLinearProjection } from '@/domain/forecast/forecastCalculator'
 import { checklistService } from '@/services/checklistService';
 import { goalsService } from '@/services/goalsService';
 import { salesService, type Sale } from '@/services/salesService';
+import {
+  sellerDailyObservationsService,
+  type SellerDailyObservation,
+} from '@/services/sellerDailyObservationsService';
 import { usersService } from '@/services/usersService';
 import { formatMonthToYYYYMM, getDaysInMonthFor } from '@/utils/dateUtils';
 
@@ -64,6 +67,26 @@ interface DayMetrics {
 
 const WORKING_DAYS = 22;
 
+let diarySessionViewFilter: ViewFilter = 'all';
+
+const mapObservationRow = (
+  row: SellerDailyObservation,
+  sellers: Array<{ id: string; full_name: string }>,
+): DiaryObservation => ({
+  id: row.id,
+  date: row.reference_date,
+  sellerId: row.seller_id,
+  sellerName:
+    row.seller?.full_name ||
+    sellers.find((seller) => seller.id === row.seller_id)?.full_name ||
+    'Vendedor',
+  authorId: row.created_by,
+  authorName: row.creator?.full_name || 'Gestor',
+  type: row.observation_type === 'FEEDBACK' ? 'feedback' : 'observation',
+  text: row.content,
+  createdAt: row.created_at,
+});
+
 export default function GestorDiaryPage() {
   const { user } = useAuth();
   const toast = useToastContext();
@@ -71,7 +94,7 @@ export default function GestorDiaryPage() {
   const now = new Date();
   const [monthDate, setMonthDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState(now.getDate());
-  const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
+  const [viewFilter, setViewFilter] = useState<ViewFilter>(diarySessionViewFilter);
   const [selectedSellerId, setSelectedSellerId] = useState('all');
   const [historyTypeFilter, setHistoryTypeFilter] = useState<'all' | ObservationType>('all');
   const [loading, setLoading] = useState(true);
@@ -108,27 +131,20 @@ export default function GestorDiaryPage() {
   const daysInMonth = getDaysInMonthFor(year, monthIndex);
   const monthStart = `${monthKey}-01`;
   const monthEnd = `${monthKey}-${String(daysInMonth).padStart(2, '0')}`;
-  const observationStorageKey = `gestor-diary-observations:${companyId || 'none'}:${monthKey}`;
-
   const selectedDateISO = `${monthKey}-${String(Math.min(selectedDay, daysInMonth)).padStart(2, '0')}`;
 
-  const loadObservations = async () => {
-    const raw = await AsyncStorage.getItem(observationStorageKey);
-    if (!raw) {
+  const loadObservations = async (sellerRows: Array<{ id: string; full_name: string }>) => {
+    if (!companyId) {
       setObservations([]);
       return;
     }
 
-    try {
-      const parsed = JSON.parse(raw) as DiaryObservation[];
-      const normalized: DiaryObservation[] = (Array.isArray(parsed) ? parsed : []).map((item) => ({
-        ...item,
-        type: item.type === 'feedback' ? 'feedback' : 'observation',
-      }));
-      setObservations(normalized);
-    } catch {
-      setObservations([]);
-    }
+    const rows = await sellerDailyObservationsService.getByCompanyAndPeriod(
+      companyId,
+      monthStart,
+      monthEnd,
+    );
+    setObservations(rows.map((row) => mapObservationRow(row, sellerRows)));
   };
 
   const loadData = async () => {
@@ -164,8 +180,8 @@ export default function GestorDiaryPage() {
       });
       setRoutineByDate(routineMap);
 
-      await loadObservations();
-    } catch {
+       await loadObservations(sellerRows || []);
+     } catch {
       toast.error('Não foi possível carregar os dados do diário.');
     } finally {
       setLoading(false);
@@ -175,10 +191,6 @@ export default function GestorDiaryPage() {
   useEffect(() => {
     void loadData();
   }, [companyId, monthEnd, monthKey, monthStart, userId]);
-
-  useEffect(() => {
-    void loadObservations();
-  }, [observationStorageKey]);
 
   useEffect(() => {
     if (selectedDay > daysInMonth) {
@@ -195,9 +207,12 @@ export default function GestorDiaryPage() {
   );
 
   const filteredSales = useMemo(() => {
+    if (viewFilter === 'mine') {
+      return monthSales.filter((sale) => sale.seller_id === userId);
+    }
     if (selectedSellerId === 'all') return monthSales;
     return monthSales.filter((sale) => sale.seller_id === selectedSellerId);
-  }, [monthSales, selectedSellerId]);
+  }, [monthSales, selectedSellerId, userId, viewFilter]);
 
   const filteredObservations = useMemo(() => {
     return observations
@@ -209,6 +224,16 @@ export default function GestorDiaryPage() {
       })
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   }, [historyTypeFilter, observations, selectedSellerId, userId, viewFilter]);
+
+  useEffect(() => {
+    diarySessionViewFilter = viewFilter;
+  }, [viewFilter]);
+
+  useEffect(() => {
+    if (viewFilter === 'mine') {
+      setSelectedSellerId('all');
+    }
+  }, [viewFilter]);
 
   const dailyGoal = monthlyGoal > 0 ? monthlyGoal / WORKING_DAYS : 0;
 
@@ -244,18 +269,19 @@ export default function GestorDiaryPage() {
     return map;
   }, [dailyGoal, daysInMonth, filteredObservations, filteredSales, monthKey, routineByDate]);
 
-  const dayRecords = useMemo(() => observations.filter((obs) => obs.date === selectedDateISO), [observations, selectedDateISO]);
+  const dayRecords = useMemo(
+    () => filteredObservations.filter((obs) => obs.date === selectedDateISO),
+    [filteredObservations, selectedDateISO]
+  );
 
   const detailSellerName =
     sellers.find((seller) => seller.id === detailSellerId)?.full_name ||
-    dayRecords.find((rec) => rec.sellerId === detailSellerId)?.sellerName ||
+    observations.find((rec) => rec.sellerId === detailSellerId)?.sellerName ||
     'Vendedor';
 
   const detailSellerDaySales = salesTotalByDateSeller.get(`${selectedDateISO}|${detailSellerId}`) || 0;
   const detailSellerRecords = dayRecords.filter((record) => record.sellerId === detailSellerId);
-  const detailSellerOptions = Array.from(new Map(dayRecords.map((record) => [record.sellerId, record.sellerName])).entries()).map(
-    ([id, name]) => ({ id, name })
-  );
+  const detailSellerOptions = sellers.map((seller) => ({ id: seller.id, name: seller.full_name }));
 
   const consideredDays = useMemo(() => {
     const isCurrentMonth = monthKey === formatMonthToYYYYMM(new Date());
@@ -300,36 +326,37 @@ export default function GestorDiaryPage() {
     type: ObservationType;
     text: string;
   }) => {
-    const next: DiaryObservation[] = [
-      {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        date: payload.date,
-        sellerId: payload.sellerId,
-        sellerName: payload.sellerName,
-        authorId: userId,
-        authorName: user?.name || 'Gestor',
-        type: payload.type,
-        text: payload.text,
-        createdAt: new Date().toISOString(),
-      },
-      ...observations,
-    ];
+    if (!companyId || !userId) {
+      throw new Error('missing-company-or-user');
+    }
 
-    await AsyncStorage.setItem(observationStorageKey, JSON.stringify(next));
-    setObservations(next);
+    const created = await sellerDailyObservationsService.createObservation({
+      company_id: companyId,
+      seller_id: payload.sellerId,
+      reference_date: payload.date,
+      content: payload.text,
+      observation_type: payload.type === 'feedback' ? 'FEEDBACK' : 'OBSERVACAO',
+      created_by: userId,
+    });
+
+    if (!created) {
+      throw new Error('create-observation-failed');
+    }
+
+    setObservations((prev) => [mapObservationRow(created, sellers), ...prev]);
   };
 
   const getEntriesForDate = (date: string) => {
     const sellerMap = new Map<string, string>();
 
-    monthSales
+    filteredSales
       .filter((sale) => sale.sale_date === date)
       .forEach((sale) => {
         const sellerName = sale.seller?.full_name || sellers.find((s) => s.id === sale.seller_id)?.full_name || 'Vendedor';
         sellerMap.set(sale.seller_id, sellerName);
       });
 
-    observations
+    filteredObservations
       .filter((obs) => obs.date === date)
       .forEach((obs) => {
         sellerMap.set(obs.sellerId, obs.sellerName || sellers.find((s) => s.id === obs.sellerId)?.full_name || 'Vendedor');
@@ -378,22 +405,19 @@ export default function GestorDiaryPage() {
     const date = `${monthKey}-${String(day).padStart(2, '0')}`;
     const entries = getEntriesForDate(date);
 
-    if (entries.length === 0) {
-      openRegisterForDate(date);
-      return;
-    }
+    const preferredSellerId =
+      selectedSellerId !== 'all'
+        ? selectedSellerId
+        : viewFilter === 'mine'
+          ? userId
+          : entries[0]?.sellerId || sellers[0]?.id || '';
 
-    if (entries.length > 1) {
-      setIsDayListModalOpen(true);
-      return;
-    }
-
-    if (entries.length === 1) {
-      setDetailSellerId(entries[0].sellerId);
-      setDetailType('observation');
-      setDetailNoteText('');
-      setIsDayDetailModalOpen(true);
-    }
+    setDetailSellerId(preferredSellerId);
+    setDetailType('observation');
+    setDetailNoteText('');
+    setIsDayListModalOpen(false);
+    setIsRegisterModalOpen(false);
+    setIsDayDetailModalOpen(true);
   };
 
   const openDetailFromList = (sellerId: string) => {
@@ -444,7 +468,10 @@ export default function GestorDiaryPage() {
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const weekLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
-  const selectedDateSellerEntries = useMemo(() => getEntriesForDate(selectedDateISO), [monthSales, observations, selectedDateISO, sellers]);
+  const selectedDateSellerEntries = useMemo(
+    () => getEntriesForDate(selectedDateISO),
+    [filteredObservations, filteredSales, selectedDateISO, sellers]
+  );
 
   if (!companyId) {
     return (
@@ -489,14 +516,24 @@ export default function GestorDiaryPage() {
             </Pressable>
             <Pressable
               className={`rounded-xl px-3 py-3 ${viewFilter === 'mine' ? 'bg-[#FF6B35]' : 'bg-[#262626]'}`}
-              onPress={() => setViewFilter('mine')}
+              onPress={() => setViewFilter((current) => (current === 'mine' ? 'all' : 'mine'))}
             >
               <Text className={`font-semibold ${viewFilter === 'mine' ? 'text-white' : 'text-[#D1D5DB]'}`}>👑 Apenas meus registros</Text>
             </Pressable>
           </View>
 
           <Text className="mb-2 mt-3 text-sm text-[#A3A3A3]">Ou selecione um vendedor</Text>
-          <Select value={selectedSellerId} options={sellerOptions} onValueChange={setSelectedSellerId} />
+          <Select
+            value={selectedSellerId}
+            options={sellerOptions}
+            onValueChange={(value) => {
+              setSelectedSellerId(value);
+              if (value !== 'all') {
+                setViewFilter('all');
+              }
+            }}
+            disabled={viewFilter === 'mine'}
+          />
         </Animated.View>
 
         <Animated.View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4" style={sectionThreeStyle}>
@@ -507,7 +544,11 @@ export default function GestorDiaryPage() {
           <Text className="mb-2 text-sm text-[#A3A3A3]">Consulte todas as observações do período.</Text>
           <Text className="mb-3 text-sm text-[#A3A3A3]">
             Filtro aplicado:{' '}
-            {selectedSellerId === 'all' ? '📊 Todos os vendedores' : sellers.find((s) => s.id === selectedSellerId)?.full_name || 'Vendedor'}
+            {viewFilter === 'mine'
+              ? '👑 Apenas meus registros'
+              : selectedSellerId === 'all'
+                ? '📊 Todos os vendedores'
+                : sellers.find((s) => s.id === selectedSellerId)?.full_name || 'Vendedor'}
           </Text>
 
           <Select
@@ -1043,21 +1084,26 @@ function DayRecordDetailModal({
           </View>
 
           <ScrollView className="flex-1" contentContainerStyle={{ gap: 10, paddingBottom: 16 }}>
-            <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">
-              <Text className="text-sm text-[#A3A3A3]">Total vendido no dia</Text>
-              <Text className="mt-1 text-3xl font-semibold text-[#FF6B35]">R$ {dayTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
-              <Text className="text-xs text-[#9CA3AF]">Consolidado de todos os registros do dia</Text>
-            </View>
+            <View className="gap-3">
+              <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">
+                <Text className="text-sm uppercase tracking-[1.5px] text-[#A3A3A3]">Status da Lida</Text>
+                <View className={`mt-2 self-start rounded-full px-3 py-1 ${hitGoal ? 'bg-[#14532D]' : 'bg-[#EF233C]'}`}>
+                  <Text className="text-sm font-semibold text-white">{hitGoal ? 'Atingida' : 'Não Atingida'}</Text>
+                </View>
+              </View>
 
-            <View className={`rounded-xl p-3 ${hitGoal ? 'bg-[#14532D]' : 'bg-[#EF233C]'}`}>
-              <Text className="text-sm text-white/80">Status Meta</Text>
-              <Text className="text-3xl font-semibold text-white">{hitGoal ? 'Atingida' : 'Não Atingida'}</Text>
-              <Text className="text-sm text-white">Meta: R$ {dailyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
-            </View>
+              <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">
+                <Text className="text-sm uppercase tracking-[1.5px] text-[#A3A3A3]">Aviso da Lida</Text>
+                <Text className={`mt-2 text-2xl font-semibold ${routineOk ? 'text-[#86EFAC]' : 'text-[#FCD34D]'}`}>
+                  {routineOk ? 'Completa' : 'Incompleta'}
+                </Text>
+              </View>
 
-            <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">
-              <Text className="text-sm text-[#A3A3A3]">Rotina do Dia</Text>
-              <Text className="text-3xl font-semibold text-white">{routineOk ? 'Completa' : 'Incompleta'}</Text>
+              <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">
+                <Text className="text-sm uppercase tracking-[1.5px] text-[#A3A3A3]">Total Vendido no Dia</Text>
+                <Text className="mt-2 text-3xl font-semibold text-[#FF6B35]">R$ {dayTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
+                <Text className="text-xs text-[#9CA3AF]">Consolidado de todos os registros do dia</Text>
+              </View>
             </View>
 
             <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">

@@ -22,9 +22,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
 import { calculateLinearProjection } from '@/domain/forecast/forecastCalculator';
 import { checklistService } from '@/services/checklistService';
+import { periodicGoalsService } from '@/services/periodicGoalsService';
 import { salesService, type Sale } from '@/services/salesService';
 import { usersService } from '@/services/usersService';
-import { formatMonthToYYYYMM, getBrazilDateString, getDaysInMonthFor } from '@/utils/dateUtils';
+import { hasValidGoal } from '@/utils/goalUtils';
+import { resolveSellerGoals } from '@/utils/periodicGoals';
+import { formatMonthToYYYYMM, getDaysInMonthFor } from '@/utils/dateUtils';
 
 type NoteType = 'observation' | 'feedback';
 
@@ -44,8 +47,6 @@ interface DayMetric {
   hasNoteWithoutSales: boolean;
 }
 
-const WORKING_DAYS = 22;
-
 export default function VendedorDiaryPage() {
   const { user } = useAuth();
   const toast = useToastContext();
@@ -57,6 +58,7 @@ export default function VendedorDiaryPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [monthlyGoal, setMonthlyGoal] = useState(0);
+  const [dailyGoalValue, setDailyGoalValue] = useState(0);
   const [monthSales, setMonthSales] = useState<Sale[]>([]);
   const [routineByDate, setRoutineByDate] = useState<Record<string, boolean>>({});
   const [notes, setNotes] = useState<SellerDiaryNote[]>([]);
@@ -125,11 +127,21 @@ export default function VendedorDiaryPage() {
       const mine = monthSalesAll.filter((sale) => sale.seller_id === userId);
       setMonthSales(mine);
 
-      const explicitDailyGoal = Number(profile?.daily_goal || 0);
-      const baseMonthlyGoal = Number(profile?.individual_goal || 0);
-      const derivedDailyGoal = explicitDailyGoal > 0 ? explicitDailyGoal : baseMonthlyGoal > 0 ? baseMonthlyGoal / WORKING_DAYS : 0;
-      const monthlyFromDaily = derivedDailyGoal > 0 ? derivedDailyGoal * WORKING_DAYS : baseMonthlyGoal;
-      setMonthlyGoal(monthlyFromDaily || 0);
+      const periodicGoal = await periodicGoalsService.getMetaPorPeriodo(userId, monthKey);
+      const effectivePeriodicGoal =
+        periodicGoal ||
+        (hasValidGoal(profile?.individual_goal)
+          ? await periodicGoalsService.upsertMeta(userId, monthKey, Number(profile?.individual_goal || 0))
+          : null);
+
+      const resolvedGoals = resolveSellerGoals({
+        seller: profile || { id: userId },
+        periodicGoal: effectivePeriodicGoal || undefined,
+        daysInMonth,
+      });
+
+      setMonthlyGoal(resolvedGoals.individualGoal || 0);
+      setDailyGoalValue(resolvedGoals.dailyGoal || 0);
 
       const byDate = new Map<string, { completed: number; total: number }>();
       periodProgress.forEach((row) => {
@@ -173,7 +185,7 @@ export default function VendedorDiaryPage() {
     return map;
   }, [notes]);
 
-  const dailyGoal = monthlyGoal > 0 ? monthlyGoal / WORKING_DAYS : 0;
+  const dailyGoal = dailyGoalValue;
 
   const dayMetricMap = useMemo(() => {
     const map: Record<string, DayMetric> = {};

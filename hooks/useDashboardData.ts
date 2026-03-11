@@ -5,9 +5,11 @@ import { calculateLinearProjection } from '@/domain/forecast/forecastCalculator'
 import { goalsService } from '@/services/goalsService';
 import { salesService } from '@/services/salesService';
 import { usersService } from '@/services/usersService';
+import { getPeriodicGoalsMapWithBackfill, resolveSellerGoals } from '@/utils/periodicGoals';
 import {
   formatDateToISO,
   getBrazilDate,
+  getBrazilMonthString,
   getCurrentDayBrazil,
   getDaysInMonthBrazil,
   getStartOfMonthBrazil,
@@ -16,6 +18,13 @@ import {
 import { hasValidGoal } from '@/utils/goalUtils';
 
 import type { SellerRanking } from '@/types';
+
+type SellerRow = {
+  id: string;
+  full_name: string | null;
+  phone?: string | null;
+  individual_goal?: number | null;
+};
 
 export interface DashboardData {
   isLoading: boolean;
@@ -31,6 +40,9 @@ export interface DashboardData {
   metGoalProjectedCount: number;
   metGoalProjectedRevenue: number;
   metGoalProjectedRevenueShare: number;
+  totalReturns: number;
+  returnsShare: number;
+  totalSellers: number;
   currentDay: number;
   daysInMonth: number;
   reload: () => Promise<void>;
@@ -44,6 +56,8 @@ export function useDashboardData(): DashboardData {
   const [monthlyGoal, setMonthlyGoal] = useState(0);
   const [currentSales, setCurrentSales] = useState(0);
   const [salesTeam, setSalesTeam] = useState<SellerRanking[]>([]);
+  const [totalReturns, setTotalReturns] = useState(0);
+  const [grossRevenue, setGrossRevenue] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date>(getBrazilDate());
 
   const currentDay = useMemo(() => getCurrentDayBrazil(), []);
@@ -90,6 +104,8 @@ export function useDashboardData(): DashboardData {
       setMonthlyGoal(0);
       setCurrentSales(0);
       setSalesTeam([]);
+      setTotalReturns(0);
+      setGrossRevenue(0);
       setError(null);
       setIsLoading(false);
       return;
@@ -102,8 +118,10 @@ export function useDashboardData(): DashboardData {
       const startOfMonth = getStartOfMonthBrazil();
       const todayBrazil = getBrazilDate();
 
+      const monthKey = getBrazilMonthString();
+
       const [goalData, allMonthSales, companyUsers] = await Promise.all([
-        goalsService.getCurrentGoal(user.company_id),
+        goalsService.getGoalByMonth(user.company_id, monthKey),
         salesService.getSalesByDateRange(
           user.company_id,
           formatDateToISO(startOfMonth),
@@ -112,8 +130,22 @@ export function useDashboardData(): DashboardData {
         usersService.getSellersByCompany(user.company_id),
       ]);
 
+      const periodicGoalsMap = await getPeriodicGoalsMapWithBackfill(companyUsers, monthKey);
+
       setMonthlyGoal(goalData?.meta1 || 0);
       setCurrentSales(allMonthSales.reduce((sum, s) => sum + (s.value || 0), 0));
+      setTotalReturns(
+        allMonthSales.reduce((sum, sale) => {
+          const value = sale.value || 0;
+          return value < 0 ? sum + Math.abs(value) : sum;
+        }, 0),
+      );
+      setGrossRevenue(
+        allMonthSales.reduce((sum, sale) => {
+          const value = sale.value || 0;
+          return value > 0 ? sum + value : sum;
+        }, 0),
+      );
 
       const salesMap = new Map<string, number>();
       const salesTodayMap = new Map<string, number>();
@@ -128,30 +160,38 @@ export function useDashboardData(): DashboardData {
       });
 
       const ranking: SellerRanking[] = companyUsers
-        .map((seller: any) => {
+        .map((seller) => {
+          const normalizedSeller = seller as SellerRow;
           const total = salesMap.get(seller.id) || 0;
           const totalToday = salesTodayMap.get(seller.id) || 0;
-          const goal = hasValidGoal(seller.individual_goal) ? Number(seller.individual_goal) : 0;
+          const resolvedGoals = resolveSellerGoals({
+            seller: normalizedSeller,
+            periodicGoal: periodicGoalsMap.get(seller.id),
+            companyGoal: goalData?.meta1 || 0,
+            sellersCount: companyUsers.length,
+            daysInMonth,
+          });
+          const goal = resolvedGoals.individualGoal;
           const validGoal = hasValidGoal(goal);
 
           return {
             id: seller.id,
-            name: seller.full_name,
+            name: normalizedSeller.full_name || 'Vendedor',
             sales: total,
             salesToday: totalToday,
             goal,
             hasValidGoal: validGoal,
             percentageOfGoal: validGoal ? (total / goal) * 100 : 0,
             avatar: '👤',
-            phone: seller.phone || undefined,
+            phone: normalizedSeller.phone || undefined,
           };
         })
         .sort((a, b) => b.sales - a.sales);
 
       setSalesTeam(ranking);
       setLastUpdated(getBrazilDate());
-    } catch (err: any) {
-      setError(err?.message || 'Erro ao carregar dados');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
     } finally {
       setIsLoading(false);
     }
@@ -186,6 +226,9 @@ export function useDashboardData(): DashboardData {
     metGoalProjectedCount,
     metGoalProjectedRevenue,
     metGoalProjectedRevenueShare,
+    totalReturns,
+    returnsShare: grossRevenue > 0 ? (totalReturns / grossRevenue) * 100 : 0,
+    totalSellers: salesTeam.length,
     currentDay,
     daysInMonth,
     reload: loadData,

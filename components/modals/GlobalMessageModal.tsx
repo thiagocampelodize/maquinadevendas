@@ -1,6 +1,6 @@
 import * as Clipboard from "expo-clipboard";
 import { Check, Copy, Search, Send, Users, X } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Modal,
@@ -39,6 +39,17 @@ interface GlobalMessageModalProps {
   companyId?: string;
 }
 
+interface MessageContextData {
+  dailyRanking: Array<{ name: string; value: number }>;
+  monthlyRanking: Array<{ name: string; value: number }>;
+  totalDailySales: number;
+  totalMonthlySales: number;
+  monthlyGoal: number;
+  dailyGoal: number;
+  sellersMetDailyGoal: string[];
+  sellersBelowThreshold: number;
+}
+
 export function GlobalMessageModal({
   isOpen,
   onClose,
@@ -57,32 +68,39 @@ export function GlobalMessageModal({
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [contextData, setContextData] = useState<any>(null);
+  const [contextData, setContextData] = useState<MessageContextData | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    let cancelled = false;
 
     const load = async () => {
       setIsLoading(true);
-      const data = await messageTemplatesService.getTemplates(companyId);
-      setTemplates(data);
-      if (data[0]) setSelectedTemplateId(data[0].id);
+      try {
+        const data = await messageTemplatesService.getTemplates(companyId);
+        if (cancelled) return;
+        const normalizedTemplates = Array.isArray(data) ? data : [];
+        setTemplates(normalizedTemplates);
+        if (normalizedTemplates[0]) setSelectedTemplateId(normalizedTemplates[0].id);
 
-      if (companyId) {
-        const todayDate = getBrazilDateString();
-        const dailySalesRaw = await salesService.getSalesByDateRange(
-          companyId,
-          todayDate,
-          todayDate,
-        );
+        if (companyId) {
+          const todayDate = getBrazilDateString();
+          const dailySalesRaw = await salesService.getSalesByDateRange(
+            companyId,
+            todayDate,
+            todayDate,
+          );
+          if (cancelled) return;
 
-        const dailyMap = new Map<string, number>();
-        let totalDailySales = 0;
-        dailySalesRaw.forEach((sale) => {
-          const current = dailyMap.get(sale.seller_id) || 0;
-          dailyMap.set(sale.seller_id, current + sale.value);
-          totalDailySales += sale.value;
-        });
+          const normalizedDailySales = Array.isArray(dailySalesRaw) ? dailySalesRaw : [];
+          const dailyMap = new Map<string, number>();
+          let totalDailySales = 0;
+          normalizedDailySales.forEach((sale) => {
+            const current = dailyMap.get(sale.seller_id) || 0;
+            dailyMap.set(sale.seller_id, current + sale.value);
+            totalDailySales += sale.value;
+          });
 
         const dailyRanking = Array.from(dailyMap.entries())
           .map(([id, value]) => {
@@ -122,25 +140,40 @@ export function GlobalMessageModal({
           (s) => s.hasValidGoal && s.goal > 0 && (s.sales / s.goal) * 100 < 40,
         ).length;
 
-        setContextData({
-          dailyRanking,
-          monthlyRanking,
-          totalDailySales,
-          totalMonthlySales,
-          monthlyGoal: totalMonthlyGoal,
-          dailyGoal: teamDailyGoal,
-          sellersMetDailyGoal,
-          sellersBelowThreshold,
-        });
+          setContextData({
+            dailyRanking,
+            monthlyRanking,
+            totalDailySales,
+            totalMonthlySales,
+            monthlyGoal: totalMonthlyGoal,
+            dailyGoal: teamDailyGoal,
+            sellersMetDailyGoal,
+            sellersBelowThreshold,
+          });
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
-
-      setIsLoading(false);
     };
 
     setSelectedSellerId("");
     setSearchTerm("");
     void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [companyId, isOpen, sellers]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const categories = [
     { value: "all", label: "Todas" },
@@ -174,7 +207,7 @@ export function GlobalMessageModal({
           goal: selectedSeller.goal,
           salesToday: selectedSeller.salesToday,
         },
-        contextData,
+        contextData ?? undefined,
       )
     : {};
 
@@ -192,7 +225,10 @@ export function GlobalMessageModal({
       await Clipboard.setStringAsync(renderedMessage);
       setCopied(true);
       toast.success("Mensagem copiada!");
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Erro ao copiar");
     }
