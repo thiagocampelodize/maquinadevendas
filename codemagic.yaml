@@ -11,8 +11,25 @@ workflows:
       - npm install
       - npx expo prebuild --platform ios --non-interactive
       - pod install --project-directory=ios
-      - xcode-project build-ipa --workspace ios/project.xcworkspace --scheme project
+
+      # Builda para o simulador iPad
+      - xcodebuild -workspace ios/project.xcworkspace
+        -scheme project
+        -configuration Debug
+        -sdk iphonesimulator
+        -destination 'platform=iOS Simulator,name=iPad (10th generation)'
+        -derivedDataPath ios/build
+
+      # Inicia o simulador
+      - xcrun simctl boot "iPad (10th generation)" || true
+
+      # Instala o app no simulador
+      - xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/maquinadevendas.app
+
+      # Lança o app e captura logs por 60 segundos
+      - xcrun simctl launch --console-pty booted com.maquinadevendas.maquinadevendass 2>&1 | tee /tmp/simulator_logs.txt &
+      - sleep 60
 
     artifacts:
-      - ios/build/**/*.ipa
+      - /tmp/simulator_logs.txt
       - /tmp/xcodebuild_logs/*.log
