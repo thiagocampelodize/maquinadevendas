@@ -66,6 +66,7 @@ target 'MquinadeVendas' do
       target.build_configurations.each do |config|
         if target.name == 'ExpoModulesCore'
           config.build_settings['SWIFT_VERSION'] = '6.0'
+          config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
         else
           config.build_settings['SWIFT_VERSION'] = '5.9'
         end
