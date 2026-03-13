@@ -13,13 +13,13 @@ workflows:
       - pod install --project-directory=ios
 
       - xcodebuild -workspace ios/MquinadeVendas.xcworkspace
-          -scheme MquinadeVendas
-          -configuration Debug
-          -sdk iphonesimulator
-          -destination 'platform=iOS Simulator,name=iPad (10th generation)'
-          -derivedDataPath ios/build
+        -scheme MquinadeVendas
+        -configuration Debug
+        -sdk iphonesimulator
+        -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M3)'
+        -derivedDataPath ios/build
 
-      - xcrun simctl boot "iPad (10th generation)" || true
+      - xcrun simctl boot "iPad Air 13-inch (M3)" || true
 
       - xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app
 
