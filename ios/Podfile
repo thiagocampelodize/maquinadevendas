@@ -64,7 +64,11 @@ target 'MquinadeVendas' do
 
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        config.build_settings['SWIFT_VERSION'] = '5.9'
+        if target.name == 'ExpoModulesCore'
+          config.build_settings['SWIFT_VERSION'] = '6.0'
+        else
+          config.build_settings['SWIFT_VERSION'] = '5.9'
+        end
       end
     end
   end
