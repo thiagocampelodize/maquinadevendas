@@ -2,23 +2,31 @@ workflows:
   ios-build:
     name: iOS Build
     environment:
-      xcode: latest
       node: 18
+      xcode: latest
       groups:
         - app_env
 
     scripts:
       - npm install
 
-      # gera pasta ios
-      - npx expo prebuild --platform ios --non-interactive
+      # garantir expo cli
+      - npm install -g expo-cli
+
+      # gerar pasta ios
+      - expo prebuild --platform ios --non-interactive
+
+      # debug: ver se ios foi criado
+      - ls -la
+      - ls -la ios || true
 
       # instalar pods
-      - cd ios
-      - pod install
+      - cd ios && pod install
+
+      # voltar
       - cd ..
 
-      # build do app
+      # build ios
       - xcodebuild \
         -workspace ios/*.xcworkspace \
         -scheme $(ls ios | grep xcodeproj | sed 's/.xcodeproj//') \
