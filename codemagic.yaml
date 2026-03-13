@@ -10,7 +10,9 @@ workflows:
     scripts:
       - npm install
       - npx expo prebuild --platform ios --non-interactive
-      - pod install --project-directory=ios # ← tudo em um step só
+      - pod install --project-directory=ios
+      - xcode-project build-ipa --workspace ios/project.xcworkspace --scheme project
 
     artifacts:
       - ios/build/**/*.ipa
+      - /tmp/xcodebuild_logs/*.log
