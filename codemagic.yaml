@@ -4,6 +4,8 @@ workflows:
     environment:
       xcode: latest
       node: latest
+      groups:
+        - app_env
     scripts:
       - npm install
       - cd ios
