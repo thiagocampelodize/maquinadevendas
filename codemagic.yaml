@@ -3,7 +3,7 @@ workflows:
     name: iOS Build
     environment:
       node: 18
-      xcode: latest
+      xcode: 16.2 
       groups:
         - app_env
 
