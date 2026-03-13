@@ -3,7 +3,7 @@ workflows:
     name: iOS Build
     environment:
       node: 18
-      xcode: 16.2 
+      xcode: 16.2
       groups:
         - app_env
 
@@ -19,7 +19,7 @@ workflows:
         -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M2)'
         -derivedDataPath ios/build
 
-      - xcrun simctl boot "iPad Air 13-inch (M3)" || true
+      - xcrun simctl boot "iPad Air 13-inch (M2)" || true
 
       - xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app
 
