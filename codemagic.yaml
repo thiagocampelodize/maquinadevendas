@@ -16,7 +16,7 @@ workflows:
         -scheme MquinadeVendas
         -configuration Debug
         -sdk iphonesimulator
-        -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M3)'
+        -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M2)'
         -derivedDataPath ios/build
 
       - xcrun simctl boot "iPad Air 13-inch (M3)" || true
