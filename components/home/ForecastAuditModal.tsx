@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Select } from '@/components/ui/Select';
 import { MODAL_ANIMATION_PRESETS, useModalAnimation } from '@/components/ui/useModalAnimation';
 
 import { calculateForecastMetrics } from '@/domain/forecast/forecastCalculator';
@@ -17,6 +18,14 @@ interface ForecastAuditModalProps {
   daysInMonth: number;
   salesTeam: SellerRanking[];
 }
+
+const sortOptions: Array<{ label: string; value: 'projection_desc' | 'missing_desc' | 'sales_desc' | 'goal_desc' | 'name_asc' }> = [
+  { label: 'Ordenar: maior previsao', value: 'projection_desc' },
+  { label: 'Ordenar: maior falta', value: 'missing_desc' },
+  { label: 'Ordenar: maior vendido', value: 'sales_desc' },
+  { label: 'Ordenar: maior meta', value: 'goal_desc' },
+  { label: 'Ordenar: nome A-Z', value: 'name_asc' },
+];
 
 export function ForecastAuditModal({
   isOpen,
@@ -151,33 +160,11 @@ export function ForecastAuditModal({
                 />
               </View>
 
-              <View className="flex-row gap-2">
-                <FilterPill
-                  label="Maior previsao"
-                  active={sortBy === 'projection_desc'}
-                  onPress={() => setSortBy('projection_desc')}
-                />
-                <FilterPill
-                  label="Maior falta"
-                  active={sortBy === 'missing_desc'}
-                  onPress={() => setSortBy('missing_desc')}
-                />
-                <FilterPill
-                  label="Maior vendido"
-                  active={sortBy === 'sales_desc'}
-                  onPress={() => setSortBy('sales_desc')}
-                />
-                <FilterPill
-                  label="Maior meta"
-                  active={sortBy === 'goal_desc'}
-                  onPress={() => setSortBy('goal_desc')}
-                />
-                <FilterPill
-                  label="Nome A-Z"
-                  active={sortBy === 'name_asc'}
-                  onPress={() => setSortBy('name_asc')}
-                />
-              </View>
+              <Select
+                value={sortBy}
+                onValueChange={(value) => setSortBy(value as 'projection_desc' | 'missing_desc' | 'sales_desc' | 'goal_desc' | 'name_asc')}
+                options={sortOptions}
+              />
 
               <View className="flex-row flex-wrap gap-2 pt-1">
                 <Badge label="Total" value={summaryAndRows.summary.total} />
