@@ -9,10 +9,7 @@ workflows:
 
     scripts:
       - npm install
-
-      # usar o CLI novo do expo
       - npx expo prebuild --platform ios --non-interactive
-
       - cd ios
       - pod install
       - cd ..
