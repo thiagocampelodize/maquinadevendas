@@ -12,7 +12,7 @@ workflows:
       - npx expo prebuild --platform ios --non-interactive
       - pod install --project-directory=ios
 
-      - xcodebuild -workspace ios/project.xcworkspace
+      - xcodebuild -workspace ios/MquinadeVendas.xcworkspace
           -scheme MquinadeVendas
           -configuration Debug
           -sdk iphonesimulator
