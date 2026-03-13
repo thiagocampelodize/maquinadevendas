@@ -10,29 +10,12 @@ workflows:
     scripts:
       - npm install
 
-      # garantir expo cli
-      - npm install -g expo-cli
+      # usar o CLI novo do expo
+      - npx expo prebuild --platform ios --non-interactive
 
-      # gerar pasta ios
-      - expo prebuild --platform ios --non-interactive
-
-      # debug: ver se ios foi criado
-      - ls -la
-      - ls -la ios || true
-
-      # instalar pods
-      - cd ios && pod install
-
-      # voltar
+      - cd ios
+      - pod install
       - cd ..
-
-      # build ios
-      - xcodebuild \
-        -workspace ios/*.xcworkspace \
-        -scheme $(ls ios | grep xcodeproj | sed 's/.xcodeproj//') \
-        -configuration Release \
-        -sdk iphonesimulator \
-        -destination 'platform=iOS Simulator,name=iPhone 15'
 
     artifacts:
       - ios/build/**/*.ipa
