@@ -8,6 +8,7 @@ workflows:
         - app_env
     scripts:
       - npm install
+      - npx expo prebuild
       - cd ios
       - pod install
       - cd ..
