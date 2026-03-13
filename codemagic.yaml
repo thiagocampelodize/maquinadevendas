@@ -7,25 +7,46 @@ workflows:
       groups:
         - app_env
 
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/ios/Pods
+        - $CM_BUILD_DIR/ios/build/Build/Products
+        - $HOME/.cocoapods/repos
+
     scripts:
-      - npm install
-      - npx expo prebuild --platform ios --non-interactive
-      - pod install --project-directory=ios
+      - name: Install dependencies
+        script: npm install
 
-      - xcodebuild -workspace ios/MquinadeVendas.xcworkspace
-        -scheme MquinadeVendas
-        -configuration Debug
-        -sdk iphonesimulator
-        -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M2)'
-        -derivedDataPath ios/build
+      - name: Expo prebuild
+        script: npx expo prebuild --platform ios --non-interactive
 
-      - xcrun simctl boot "iPad Air 13-inch (M2)" || true
+      - name: Pod install
+        script: pod install --project-directory=ios
 
-      - xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app
+      - name: Build for simulator
+        script: |
+          xcodebuild \
+            -workspace ios/MquinadeVendas.xcworkspace \
+            -scheme MquinadeVendas \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M2)' \
+            -derivedDataPath ios/build \
+            | xcpretty || xcodebuild \
+            -workspace ios/MquinadeVendas.xcworkspace \
+            -scheme MquinadeVendas \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M2)' \
+            -derivedDataPath ios/build
 
-      - xcrun simctl launch --console-pty booted com.maquinadevendas.maquinadevendas 2>&1 | tee /tmp/simulator_logs.txt &
-      - sleep 60
+      - name: Boot simulator e lançar app
+        script: |
+          xcrun simctl boot "iPad Air 13-inch (M2)" || true
+          xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app
+          xcrun simctl launch --console-pty booted com.maquinadevendas.maquinadevendas 2>&1 | tee /tmp/simulator_logs.txt &
+          sleep 60
 
     artifacts:
       - /tmp/simulator_logs.txt
-      - /tmp/xcodebuild_logs/*.log
+      - ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app
