@@ -10,9 +10,7 @@ workflows:
     scripts:
       - npm install
       - npx expo prebuild --platform ios --non-interactive
-      - cd ios
-      - pod install
-      - cd ..
+      - pod install --project-directory=ios # ← tudo em um step só
 
     artifacts:
       - ios/build/**/*.ipa
