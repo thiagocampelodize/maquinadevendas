@@ -1,21 +1,30 @@
 workflows:
   ios-build:
-    name: IOS Build
+    name: iOS Build
     environment:
       xcode: latest
-      node: latest
+      node: 18
       groups:
         - app_env
+
     scripts:
       - npm install
-      - npx expo prebuild
+
+      # gera pasta ios
+      - npx expo prebuild --platform ios --non-interactive
+
+      # instalar pods
       - cd ios
       - pod install
       - cd ..
-      - npx react-native bundle \
-        --entry-file index.js \
-        --platform ios \
-        --dev false \
-        --bundle-output ios/main.jsbundle \
+
+      # build do app
+      - xcodebuild \
+        -workspace ios/*.xcworkspace \
+        -scheme $(ls ios | grep xcodeproj | sed 's/.xcodeproj//') \
+        -configuration Release \
+        -sdk iphonesimulator \
+        -destination 'platform=iOS Simulator,name=iPhone 15'
+
     artifacts:
       - ios/build/**/*.ipa
