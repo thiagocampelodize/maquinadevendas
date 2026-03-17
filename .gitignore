@@ -42,3 +42,4 @@ yarn-error.*
 
 credentials.json
 .env.local
+/ios
