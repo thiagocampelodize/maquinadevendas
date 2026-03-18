@@ -3,6 +3,7 @@
     "name": "Máquina de Vendas",
     "slug": "maquina-de-vendas",
     "version": "1.0.1",
+    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/logo-app.png",
     "userInterfaceStyle": "dark",
@@ -25,16 +26,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
-      "@sentry/react-native",
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "react-native",
-          "organization": "campelo-cl"
-        }
-      ]
+      "expo-font"
     ],
     "extra": {
       "router": {},
