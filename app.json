@@ -3,7 +3,6 @@
     "name": "Máquina de Vendas",
     "slug": "maquina-de-vendas",
     "version": "1.0.1",
-    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/logo-app.png",
     "userInterfaceStyle": "dark",
@@ -15,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.maquinadevendas.maquinadevendas",
-      "buildNumber": "1", 
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -31,9 +30,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3cd19e9f-ba54-4a60-b0ce-c0314d4d9072"
+        "projectId": "f3c24ab4-cc8a-4ccc-a3d8-cf9e21ed3972"
       }
     },
-    "owner": "maquinadevendass-organization"
+    "owner": "maquina-de-vendas"
   }
 }
