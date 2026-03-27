@@ -2,7 +2,7 @@ import '@/global.css';
 
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ToastRoot } from '@/components/ui/Toast';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { supabaseConfigError } from '@/lib/supabase';
 
 function Gate() {
   const { loading, isAuthenticated, role, user } = useAuth();
@@ -46,6 +47,18 @@ function Gate() {
       if (role === 'VENDEDOR') router.replace('/(vendedor)');
     }
   }, [isAuthenticated, loading, role, router, segments, user?.company_id]);
+
+  if (supabaseConfigError) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#0A0A0A] px-6">
+        <Text className="text-center text-xl font-semibold text-white">Configuracao incompleta</Text>
+        <Text className="mt-3 text-center text-sm text-[#D1D5DB]">
+          Este build foi gerado sem as variaveis publicas do Supabase.
+        </Text>
+        <Text className="mt-2 text-center text-xs text-[#9CA3AF]">{supabaseConfigError}</Text>
+      </View>
+    );
+  }
 
   if (loading) {
     return (

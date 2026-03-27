@@ -3,6 +3,7 @@
     "name": "Máquina de Vendas",
     "slug": "maquina-de-vendas",
     "version": "1.0.1",
+    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/logo-app.png",
     "userInterfaceStyle": "dark",

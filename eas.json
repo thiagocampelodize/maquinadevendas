@@ -14,6 +14,9 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "RCT_USE_PREBUILT_RNCORE": "0"
+      },
       "ios": {
         "image": "latest"
       }

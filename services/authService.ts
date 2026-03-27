@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseConfigError } from '@/lib/supabase';
 import type { AuthUser } from '@/types';
 import { normalizeRole } from '@/utils/roleUtils';
 
@@ -35,10 +35,12 @@ const mapUser = (row: any): AuthUser => ({
 
 export const authService = {
   async restoreSession(): Promise<AuthUser | null> {
-    const session = await AsyncStorage.getItem(SESSION_KEY);
-    if (!session) return null;
-
     try {
+      if (!supabase) return null;
+
+      const session = await AsyncStorage.getItem(SESSION_KEY);
+      if (!session) return null;
+
       const parsed = JSON.parse(session) as AuthUser;
 
       const { data, error } = await supabase
@@ -64,6 +66,10 @@ export const authService = {
 
   async signIn(usernameOrEmail: string, password: string, options?: SignInOptions): Promise<SignInResult> {
     try {
+      if (!supabase) {
+        return { success: false, error: supabaseConfigError ?? 'Configuracao do aplicativo indisponivel.' };
+      }
+
       const input = usernameOrEmail.toLowerCase().trim();
       const selectFields =
         'id, username, full_name, email, password_hash, role, company_id, active, companies(status)';

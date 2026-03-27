@@ -27,33 +27,42 @@ const initialState: AuthState = {
   role: null,
   company: null,
   isAuthenticated: false,
-  loading: true,
+  loading: false,
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(initialState);
 
-  const loadSession = async () => {
-    setState((prev) => ({ ...prev, loading: true }));
-    const user = await authService.restoreSession();
-
-    if (!user) {
-      setState({ ...initialState, loading: false });
-      return;
+  const loadSession = async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setState((prev) => ({ ...prev, loading: true }));
     }
 
-    setState({
-      user,
-      profile: null,
-      role: user.role,
-      company: user.company_id ? { id: user.company_id } : null,
-      isAuthenticated: true,
-      loading: false,
-    });
+    try {
+      const user = await authService.restoreSession();
+
+      if (!user) {
+        if (!options?.silent) {
+          setState({ ...initialState, loading: false });
+        }
+        return;
+      }
+
+      setState({
+        user,
+        profile: null,
+        role: user.role,
+        company: user.company_id ? { id: user.company_id } : null,
+        isAuthenticated: true,
+        loading: false,
+      });
+    } catch {
+      setState({ ...initialState, loading: false });
+    }
   };
 
   useEffect(() => {
-    void loadSession();
+    void loadSession({ silent: true });
   }, []);
 
   const signIn = async (username: string, password: string) => {
