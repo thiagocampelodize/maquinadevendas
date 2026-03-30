@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { captureBootstrapError, markBootstrapStage } from '@/lib/bootstrap-diagnostics';
 import { authService } from '@/services/authService';
 import type { AuthUser, UserRole } from '@/types';
 
@@ -34,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(initialState);
 
   const loadSession = async (options?: { silent?: boolean }) => {
+    markBootstrapStage('auth-restore-start', { silent: Boolean(options?.silent) });
+
     if (!options?.silent) {
       setState((prev) => ({ ...prev, loading: true }));
     }
@@ -42,12 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = await authService.restoreSession();
 
       if (!user) {
+        markBootstrapStage('auth-restore-empty');
         if (!options?.silent) {
           setState({ ...initialState, loading: false });
         }
         return;
       }
 
+      markBootstrapStage('auth-restore-success', { role: user.role });
       setState({
         user,
         profile: null,
@@ -57,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading: false,
       });
     } catch {
+      captureBootstrapError(new Error('Failed to restore auth session'), 'auth-restore-session');
       setState({ ...initialState, loading: false });
     }
   };

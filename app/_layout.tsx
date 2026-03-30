@@ -1,8 +1,9 @@
 import '@/global.css';
+import '@/lib/sentry';
 
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ToastRoot } from '@/components/ui/Toast';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { markBootstrapStage } from '@/lib/bootstrap-diagnostics';
 import { supabaseConfigError } from '@/lib/supabase';
 
 function Gate() {
@@ -18,30 +20,44 @@ function Gate() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
+    markBootstrapStage('root-gate-mounted');
+  }, []);
+
+  useEffect(() => {
+    if (supabaseConfigError) {
+      markBootstrapStage('supabase-config-error');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loading || !isAuthenticated) return;
 
     const inAuthGroup = segments[0] === '(auth)';
     const inAdminGroup = segments[0] === '(admin)';
     const isOnboardingRoute = segments.includes('onboarding');
     const mustOnboard = role === 'GESTOR' && !user?.company_id;
+    const isRootRoute = segments.length === 0;
 
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-      return;
-    }
+    markBootstrapStage('authenticated-route-evaluation', {
+      role: role ?? 'unknown',
+      in_auth_group: inAuthGroup,
+      in_admin_group: inAdminGroup,
+      onboarding_route: isOnboardingRoute,
+      root_route: isRootRoute,
+    });
 
-    if (isAuthenticated && inAdminGroup && role !== 'ADMIN') {
+    if (inAdminGroup && role !== 'ADMIN') {
       if (role === 'GESTOR') router.replace('/(gestor)');
       if (role === 'VENDEDOR') router.replace('/(vendedor)');
       return;
     }
 
-    if (isAuthenticated && mustOnboard && !isOnboardingRoute) {
+    if (mustOnboard && !isOnboardingRoute) {
       router.replace('/(auth)/onboarding/step1');
       return;
     }
 
-    if (isAuthenticated && inAuthGroup && !mustOnboard) {
+    if ((inAuthGroup || isRootRoute) && !mustOnboard) {
       if (role === 'ADMIN') router.replace('/(admin)');
       if (role === 'GESTOR') router.replace('/(gestor)');
       if (role === 'VENDEDOR') router.replace('/(vendedor)');
@@ -56,14 +72,6 @@ function Gate() {
           Este build foi gerado sem as variaveis publicas do Supabase.
         </Text>
         <Text className="mt-2 text-center text-xs text-[#9CA3AF]">{supabaseConfigError}</Text>
-      </View>
-    );
-  }
-
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-[#0A0A0A]">
-        <ActivityIndicator color="#FF6B35" size="large" />
       </View>
     );
   }

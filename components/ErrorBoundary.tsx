@@ -1,6 +1,8 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
+import { captureBootstrapError } from '@/lib/bootstrap-diagnostics';
+
 type ErrorBoundaryProps = {
   children: React.ReactNode;
   fallback?: React.ReactNode;
@@ -29,6 +31,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[ErrorBoundary]', error, info);
+    captureBootstrapError(error, 'react-error-boundary');
   }
 
   render() {

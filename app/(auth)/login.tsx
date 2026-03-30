@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Image, SafeAreaView, Text, View } from 'react-native';
 import { z } from 'zod';
@@ -9,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
+import { markFirstScreenRendered } from '@/lib/bootstrap-diagnostics';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Informe seu usuário ou e-mail'),
@@ -21,6 +23,10 @@ export default function LoginScreen() {
   const { signIn } = useAuth();
   const { error } = useToastContext();
   const router = useRouter();
+
+  useEffect(() => {
+    markFirstScreenRendered('login');
+  }, []);
 
   const {
     control,

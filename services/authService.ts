@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { captureBootstrapError, markBootstrapStage } from '@/lib/bootstrap-diagnostics';
 import { supabase, supabaseConfigError } from '@/lib/supabase';
 import type { AuthUser } from '@/types';
 import { normalizeRole } from '@/utils/roleUtils';
@@ -36,10 +37,16 @@ const mapUser = (row: any): AuthUser => ({
 export const authService = {
   async restoreSession(): Promise<AuthUser | null> {
     try {
-      if (!supabase) return null;
+      if (!supabase) {
+        markBootstrapStage('auth-restore-no-supabase');
+        return null;
+      }
 
       const session = await AsyncStorage.getItem(SESSION_KEY);
-      if (!session) return null;
+      if (!session) {
+        markBootstrapStage('auth-restore-no-local-session');
+        return null;
+      }
 
       const parsed = JSON.parse(session) as AuthUser;
 
@@ -51,14 +58,17 @@ export const authService = {
         .single();
 
       if (error || !data || isCompanySuspended(data)) {
+        markBootstrapStage('auth-restore-invalid-session');
         await AsyncStorage.removeItem(SESSION_KEY);
         return null;
       }
 
       const user = mapUser(data);
+      markBootstrapStage('auth-restore-user-loaded', { role: user.role });
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(user));
       return user;
-    } catch {
+    } catch (error) {
+      captureBootstrapError(error, 'auth-service-restore-session');
       await AsyncStorage.removeItem(SESSION_KEY);
       return null;
     }
