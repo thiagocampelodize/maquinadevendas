@@ -2,6 +2,7 @@
   "expo": {
     "name": "Máquina de Vendas",
     "slug": "maquina-de-vendas",
+    "scheme": "maquina-de-vendas",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/logo-app.png",
