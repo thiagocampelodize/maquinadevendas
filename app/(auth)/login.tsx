@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Image, SafeAreaView, Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/Button';
@@ -37,16 +38,13 @@ export default function LoginScreen() {
     defaultValues: { username: '', password: '' },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
-    const result = await signIn(values.username, values.password);
+  const onSubmit = async (data: LoginFormValues) => {
+    const result = await signIn(data.username, data.password);
 
     if (!result.success) {
-      error('Falha no login', { message: result.error || 'Usuário ou senha incorretos' });
-      return;
+       error('Falha no login', { message: result.error || 'Usuário ou senha incorretos' });
     }
-
-    router.replace('/');
-  };
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#0A0A0A]">
