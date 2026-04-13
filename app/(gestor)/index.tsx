@@ -47,6 +47,7 @@ export default function GestorHomePage() {
   const [isCriticalBannerDismissed, setIsCriticalBannerDismissed] = useState(false);
   const [selectedSellerForMessage, setSelectedSellerForMessage] =
     useState<SellerRanking | null>(null);
+
   const headerEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.dashboard,
     index: 0,
@@ -63,6 +64,7 @@ export default function GestorHomePage() {
     ...ENTRANCE_ANIMATION_TOKENS.dashboard,
     index: 3,
   });
+
   const {
     isLoading,
     error,
@@ -123,7 +125,10 @@ export default function GestorHomePage() {
     () => Math.max(0, monthlyGoal - currentSales),
     [currentSales, monthlyGoal],
   );
+
+  // Banner só aparece quando os dados já carregaram (isLoading = false)
   const shouldShowCriticalBanner =
+    !isLoading &&
     monthlyGoal > 0 &&
     proportionalPercentage < 60 &&
     missingAmount > 0 &&
@@ -149,11 +154,7 @@ export default function GestorHomePage() {
         title: "Panorama do Mes",
         subtitle: `${user?.name || "Gestor"} • Projecao ${projection.toLocaleString(
           "pt-BR",
-          {
-            style: "currency",
-            currency: "BRL",
-            minimumFractionDigits: 2,
-          },
+          { style: "currency", currency: "BRL", minimumFractionDigits: 2 },
         )}`,
       };
     }
@@ -164,11 +165,7 @@ export default function GestorHomePage() {
         title: "Previsao: Meta Batida! 🎯",
         subtitle: `${user?.name || "Gestor"} • ${projection.toLocaleString(
           "pt-BR",
-          {
-            style: "currency",
-            currency: "BRL",
-            minimumFractionDigits: 2,
-          },
+          { style: "currency", currency: "BRL", minimumFractionDigits: 2 },
         )}`,
       };
     }
@@ -242,24 +239,6 @@ export default function GestorHomePage() {
     );
   }
 
-  if (isLoading && !refreshing) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black">
-        <Text className="text-[#FF6B35]">Carregando painel...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
-        <Text className="text-center text-red-500">
-          Erro ao carregar dados: {error}
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-black">
       {shouldShowCriticalBanner ? (
@@ -281,62 +260,78 @@ export default function GestorHomePage() {
           />
         }
       >
-        {!shouldShowCriticalBanner ? (
-          <Animated.View style={headerEntranceStyle}>
-            <HomeHeader
-              statusTitle={status.title}
-              statusSubtitle={status.subtitle}
-              statusColor={status.color}
-            />
-          </Animated.View>
-        ) : null}
-        <Animated.View style={metricsEntranceStyle}>
-          <HomeMetrics
-            monthlyGoal={monthlyGoal}
-            currentSales={currentSales}
-            projection={projection}
-            percentageComplete={percentageComplete}
-            metGoalReachedCount={metGoalReachedCount}
-            metGoalReachedRevenue={metGoalReachedRevenue}
-            metGoalReachedRevenueShare={metGoalReachedRevenueShare}
-            metGoalProjectedCount={metGoalProjectedCount}
-            metGoalProjectedRevenue={metGoalProjectedRevenue}
-            metGoalProjectedRevenueShare={metGoalProjectedRevenueShare}
-            currentDay={currentDay}
-            daysInMonth={daysInMonth}
-          />
-        </Animated.View>
+        {isLoading && !refreshing ? (
+          // Loading inline — não substitui o layout inteiro nem deixa o banner órfão
+          <View className="flex-1 items-center justify-center py-20">
+            <Text className="text-[#FF6B35]">Carregando painel...</Text>
+          </View>
+        ) : error ? (
+          <View className="flex-1 items-center justify-center py-20 px-8">
+            <Text className="text-center text-red-500">
+              Erro ao carregar dados: {error}
+            </Text>
+          </View>
+        ) : (
+          <>
+            {!shouldShowCriticalBanner ? (
+              <Animated.View style={headerEntranceStyle}>
+                <HomeHeader
+                  statusTitle={status.title}
+                  statusSubtitle={status.subtitle}
+                  statusColor={status.color}
+                />
+              </Animated.View>
+            ) : null}
 
-        <RepresentativesSummary
-          totalReturns={totalReturns}
-          returnsShare={returnsShare}
-          sellersHitGoalCount={metGoalReachedCount}
-          totalSellers={totalSellers}
-        />
+            <Animated.View style={metricsEntranceStyle}>
+              <HomeMetrics
+                monthlyGoal={monthlyGoal}
+                currentSales={currentSales}
+                projection={projection}
+                percentageComplete={percentageComplete}
+                metGoalReachedCount={metGoalReachedCount}
+                metGoalReachedRevenue={metGoalReachedRevenue}
+                metGoalReachedRevenueShare={metGoalReachedRevenueShare}
+                metGoalProjectedCount={metGoalProjectedCount}
+                metGoalProjectedRevenue={metGoalProjectedRevenue}
+                metGoalProjectedRevenueShare={metGoalProjectedRevenueShare}
+                currentDay={currentDay}
+                daysInMonth={daysInMonth}
+              />
+            </Animated.View>
 
-        <View style={{ flexDirection: isDesktop ? "row" : "column", gap: 16 }}>
-          <Animated.View style={[{ flex: isDesktop ? 2 : 1 }, rankingEntranceStyle]}>
-            <PerformanceRanking
-              salesTeam={salesTeam}
-              currentDay={currentDay}
-              daysInMonth={daysInMonth}
-              onOpenModal={() => setShowRankingModal(true)}
-              onOpenMessage={handleOpenMessage}
+            <RepresentativesSummary
+              totalReturns={totalReturns}
+              returnsShare={returnsShare}
+              sellersHitGoalCount={metGoalReachedCount}
+              totalSellers={totalSellers}
             />
-          </Animated.View>
 
-          <Animated.View style={[{ flex: isDesktop ? 1 : 1 }, actionsEntranceStyle]}>
-            <HomeQuickActions
-              isStartingTask={isStartingTask}
-              currentHour={new Date().getHours()}
-              onStartTask={handleStartTask}
-              onShowMessages={() => setShowMessagesModal(true)}
-              onShowAdherence={() => setShowAdherenceModal(true)}
-              onShowGlobalMessage={() => setShowGlobalMessageModal(true)}
-              onShowForecastAudit={() => setShowForecastAuditModal(true)}
-            />
-          </Animated.View>
-        </View>
+            <View style={{ flexDirection: isDesktop ? "row" : "column", gap: 16 }}>
+              <Animated.View style={[{ flex: isDesktop ? 2 : 1 }, rankingEntranceStyle]}>
+                <PerformanceRanking
+                  salesTeam={salesTeam}
+                  currentDay={currentDay}
+                  daysInMonth={daysInMonth}
+                  onOpenModal={() => setShowRankingModal(true)}
+                  onOpenMessage={handleOpenMessage}
+                />
+              </Animated.View>
+
+              <Animated.View style={[{ flex: isDesktop ? 1 : 1 }, actionsEntranceStyle]}>
+                <HomeQuickActions
+                  isStartingTask={isStartingTask}
+                  currentHour={new Date().getHours()}
+                  onStartTask={handleStartTask}
+                  onShowMessages={() => setShowMessagesModal(true)}
+                  onShowAdherence={() => setShowAdherenceModal(true)}
+                  onShowGlobalMessage={() => setShowGlobalMessageModal(true)}
+                  onShowForecastAudit={() => setShowForecastAuditModal(true)}
+                />
+              </Animated.View>
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <RankingModal

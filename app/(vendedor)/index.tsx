@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DollarSign } from 'lucide-react-native';
 import { Animated, RefreshControl, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
@@ -97,20 +97,20 @@ export default function VendedorHomePage() {
     };
   }, [currentDay, currentSales, daysInMonth, monthlyGoal, projection, user?.name]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await reload();
     setRefreshing(false);
-  };
+  }, [reload]);
 
-  const handleStartTask = async () => {
+  const handleStartTask = useCallback(async () => {
     setIsStartingTask(true);
     router.push('/(vendedor)/rotina');
     if (startTaskTimeoutRef.current) {
       clearTimeout(startTaskTimeoutRef.current);
     }
     startTaskTimeoutRef.current = setTimeout(() => setIsStartingTask(false), 300);
-  };
+  }, [router]);
 
   useEffect(() => {
     return () => {
@@ -131,93 +131,106 @@ export default function VendedorHomePage() {
     );
   }
 
-  if (isLoading && !refreshing) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black">
-        <Text className="text-[#FF6B35]">Carregando painel...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
-        <Text className="text-center text-red-500">Erro ao carregar dados: {error}</Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-black">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF6B35" />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF6B35" />
+        }
       >
         <View style={{ width: contentWidth, alignSelf: 'center', gap: 16 }}>
-          <Animated.View style={headerStyle}>
-            <HomeHeader statusTitle={status.title} statusSubtitle={status.subtitle} statusColor={status.color} />
-          </Animated.View>
+          {isLoading && !refreshing ? (
+            // Loading inline — não substitui o layout inteiro
+            <View className="flex-1 items-center justify-center py-20">
+              <Text className="text-[#FF6B35]">Carregando painel...</Text>
+            </View>
+          ) : error ? (
+            <View className="flex-1 items-center justify-center py-20 px-8">
+              <Text className="text-center text-red-500">Erro ao carregar dados: {error}</Text>
+            </View>
+          ) : (
+            <>
+              <Animated.View style={headerStyle}>
+                <HomeHeader
+                  statusTitle={status.title}
+                  statusSubtitle={status.subtitle}
+                  statusColor={status.color}
+                />
+              </Animated.View>
 
-          <Animated.View style={metricsStyle}>
-            <HomeMetrics
-              monthlyGoal={monthlyGoal}
-              currentSales={currentSales}
-              projection={projection}
-              percentageComplete={percentageComplete}
-              metGoalReachedCount={metGoalReachedCount}
-              metGoalReachedRevenue={metGoalReachedRevenue}
-              metGoalReachedRevenueShare={metGoalReachedRevenueShare}
-              metGoalProjectedCount={metGoalProjectedCount}
-              metGoalProjectedRevenue={metGoalProjectedRevenue}
-              metGoalProjectedRevenueShare={metGoalProjectedRevenueShare}
-              currentDay={currentDay}
-              daysInMonth={daysInMonth}
-            />
-          </Animated.View>
+              <Animated.View style={metricsStyle}>
+                <HomeMetrics
+                  monthlyGoal={monthlyGoal}
+                  currentSales={currentSales}
+                  projection={projection}
+                  percentageComplete={percentageComplete}
+                  metGoalReachedCount={metGoalReachedCount}
+                  metGoalReachedRevenue={metGoalReachedRevenue}
+                  metGoalReachedRevenueShare={metGoalReachedRevenueShare}
+                  metGoalProjectedCount={metGoalProjectedCount}
+                  metGoalProjectedRevenue={metGoalProjectedRevenue}
+                  metGoalProjectedRevenueShare={metGoalProjectedRevenueShare}
+                  currentDay={currentDay}
+                  daysInMonth={daysInMonth}
+                />
+              </Animated.View>
 
-          <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: 16 }}>
-            <Animated.View style={[{ flex: isDesktop ? 2 : 1 }, rankingStyle]}>
-              <PerformanceRanking
-                salesTeam={salesTeam}
-                currentDay={currentDay}
-                daysInMonth={daysInMonth}
-                onOpenModal={() => setShowRankingModal(true)}
-                showMessageAction={false}
-              />
-            </Animated.View>
+              <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: 16 }}>
+                <Animated.View style={[{ flex: isDesktop ? 2 : 1 }, rankingStyle]}>
+                  <PerformanceRanking
+                    salesTeam={salesTeam}
+                    currentDay={currentDay}
+                    daysInMonth={daysInMonth}
+                    onOpenModal={() => setShowRankingModal(true)}
+                    showMessageAction={false}
+                  />
+                </Animated.View>
 
-            <Animated.View style={[{ flex: isDesktop ? 1 : 1 }, actionsStyle]} className="gap-4">
-              <View className="rounded-2xl border border-[#FF6B35] bg-[#FF6B35] p-4">
-                <View className="mb-3 flex-row items-center justify-between">
-                  <Text className="text-lg font-semibold text-white">Próxima Tarefa</Text>
-                  <Button className="bg-white" textStyle={{ color: '#FF6B35' }} size="sm" loading={isStartingTask} onPress={handleStartTask}>
-                    {isStartingTask ? 'Iniciando...' : 'Iniciar'}
-                  </Button>
-                </View>
-                <Text className="text-sm text-white/90">
-                  {new Date().getHours() < 12
-                    ? '☀️ Checklist da Manhã - Abertura'
-                    : new Date().getHours() < 17
-                      ? '🌤️ Checklist do Meio-dia - Acompanhamento'
-                      : '🌙 Checklist da Noite - Fechamento'}
-                </Text>
-              </View>
-
-              <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-                <View className="mb-3 flex-row items-center gap-2">
-                  <View className="rounded-lg bg-[#262626] p-2">
-                    <DollarSign stroke="#FF6B35" size={18} />
+                <Animated.View style={[{ flex: isDesktop ? 1 : 1 }, actionsStyle]} className="gap-4">
+                  <View className="rounded-2xl border border-[#FF6B35] bg-[#FF6B35] p-4">
+                    <View className="mb-3 flex-row items-center justify-between">
+                      <Text className="text-lg font-semibold text-white">Próxima Tarefa</Text>
+                      <Button
+                        className="bg-white"
+                        textStyle={{ color: '#FF6B35' }}
+                        size="sm"
+                        loading={isStartingTask}
+                        onPress={handleStartTask}
+                      >
+                        {isStartingTask ? 'Iniciando...' : 'Iniciar'}
+                      </Button>
+                    </View>
+                    <Text className="text-sm text-white/90">
+                      {new Date().getHours() < 12
+                        ? '☀️ Checklist da Manhã - Abertura'
+                        : new Date().getHours() < 17
+                          ? '🌤️ Checklist do Meio-dia - Acompanhamento'
+                          : '🌙 Checklist da Noite - Fechamento'}
+                    </Text>
                   </View>
-                  <Text className="text-lg font-semibold text-white">Lançar Vendas</Text>
-                </View>
-                <Text className="mb-4 text-sm text-[#9CA3AF]">Registre suas vendas do dia.</Text>
-                <Button variant="outline" className="h-12 rounded-xl bg-[#262626]" onPress={() => router.push('/(vendedor)/vendas')}>
-                  Acessar Lançamento
-                </Button>
+
+                  <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                    <View className="mb-3 flex-row items-center gap-2">
+                      <View className="rounded-lg bg-[#262626] p-2">
+                        <DollarSign stroke="#FF6B35" size={18} />
+                      </View>
+                      <Text className="text-lg font-semibold text-white">Lançar Vendas</Text>
+                    </View>
+                    <Text className="mb-4 text-sm text-[#9CA3AF]">Registre suas vendas do dia.</Text>
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-xl bg-[#262626]"
+                      onPress={() => router.push('/(vendedor)/vendas')}
+                    >
+                      Acessar Lançamento
+                    </Button>
+                  </View>
+                </Animated.View>
               </View>
-            </Animated.View>
-          </View>
+            </>
+          )}
         </View>
       </ScrollView>
 
