@@ -40,6 +40,15 @@ workflows:
             -destination 'platform=iOS Simulator,name=iPad Air 13-inch (M2)' \
             -derivedDataPath ios/build
 
+      - name: Package app bundle for Appetize
+        script: |
+          APP_PATH="ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app"
+          TAR_DIR="ios/build/Build/Products/Debug-iphonesimulator"
+          TAR_PATH="$TAR_DIR/MquinadeVendas.app.tar"
+          test -d "$APP_PATH"
+          /usr/bin/tar -cf "$TAR_PATH" -C "$TAR_DIR" "MquinadeVendas.app"
+          ls -lah "$APP_PATH" "$TAR_PATH"
+
       - name: Boot simulator e lançar app
         script: |
           xcrun simctl boot "iPad Air 13-inch (M2)" || true
@@ -49,4 +58,5 @@ workflows:
 
     artifacts:
       - /tmp/simulator_logs.txt
+      - ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app.tar
       - ios/build/Build/Products/Debug-iphonesimulator/MquinadeVendas.app
