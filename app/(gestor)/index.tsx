@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import {
   Animated,
+  Platform,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -26,6 +27,11 @@ import { useEntranceAnimation } from "@/components/ui/useEntranceAnimation";
 import { ENTRANCE_ANIMATION_TOKENS } from "@/constants/animationTokens";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import {
+  captureBootstrapError,
+  markBootstrapStage,
+  markFirstScreenRendered,
+} from "@/lib/bootstrap-diagnostics";
 import { companiesService } from "@/services/companiesService";
 import type { SellerRanking } from "@/types";
 
@@ -47,22 +53,27 @@ export default function GestorHomePage() {
   const [isCriticalBannerDismissed, setIsCriticalBannerDismissed] = useState(false);
   const [selectedSellerForMessage, setSelectedSellerForMessage] =
     useState<SellerRanking | null>(null);
+  const disableEntranceAnimation = Platform.OS === "ios";
 
   const headerEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.dashboard,
     index: 0,
+    disabled: disableEntranceAnimation,
   });
   const metricsEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.dashboard,
     index: 1,
+    disabled: disableEntranceAnimation,
   });
   const rankingEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.dashboard,
     index: 2,
+    disabled: disableEntranceAnimation,
   });
   const actionsEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.dashboard,
     index: 3,
+    disabled: disableEntranceAnimation,
   });
 
   const {
@@ -88,17 +99,36 @@ export default function GestorHomePage() {
   } = useDashboardData();
 
   useEffect(() => {
+    markFirstScreenRendered("gestor-dashboard");
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
 
     const loadCompanyName = async () => {
+      markBootstrapStage("gestor-company-load-start", {
+        company_present: Boolean(user?.company_id),
+      });
       if (!user?.company_id) {
         if (isMounted) setCompanyName("Operacao");
+        markBootstrapStage("gestor-company-load-skipped");
         return;
       }
 
-      const company = await companiesService.getCompanyById(user.company_id);
-      if (isMounted) {
-        setCompanyName(company?.name || "Operacao");
+      try {
+        const company = await companiesService.getCompanyById(user.company_id);
+        if (isMounted) {
+          setCompanyName(company?.name || "Operacao");
+        }
+        markBootstrapStage("gestor-company-load-success", {
+          company_found: Boolean(company?.name),
+        });
+      } catch (error) {
+        markBootstrapStage("gestor-company-load-error");
+        captureBootstrapError(error, "gestor-company-load");
+        if (isMounted) {
+          setCompanyName("Operacao");
+        }
       }
     };
 
@@ -240,7 +270,7 @@ export default function GestorHomePage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <View className="flex-1 bg-black">
       {shouldShowCriticalBanner ? (
         <CriticalGoalBanner
           companyName={companyName}
@@ -388,6 +418,6 @@ export default function GestorHomePage() {
           companyId={user?.company_id || undefined}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }

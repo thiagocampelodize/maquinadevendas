@@ -73,39 +73,41 @@ export function Select({ label, value, options, placeholder = 'Selecione...', on
         <ChevronDown stroke="#9CA3AF" size={16} />
       </Pressable>
 
-      <Modal visible={shouldRender} transparent animationType="none" onRequestClose={closeDropdown}>
-        <Pressable className="flex-1" onPress={closeDropdown}>
-          <Animated.View
-            className="absolute rounded-lg border border-[#2D2D2D] bg-[#111111]"
-            style={[
-              {
-                left: dropdownLayout.x,
-                top: dropdownLayout.y,
-                width: dropdownLayout.width,
-              },
-              animatedContentStyle,
-            ]}
-          >
-            <ScrollView nestedScrollEnabled style={{ maxHeight: dropdownLayout.maxHeight }}>
-              {options.map((option) => {
-                const active = option.value === value;
-                return (
-                  <Pressable
-                    key={option.value}
-                    onPress={() => {
-                      onValueChange(option.value);
-                      closeDropdown();
-                    }}
-                    className={`px-3 py-3 ${active ? 'bg-[#FF6B3522]' : 'bg-transparent'}`}
-                  >
-                    <Text className={`${active ? 'text-[#FF6B35]' : 'text-white'}`}>{option.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </Animated.View>
-        </Pressable>
-      </Modal>
+      {shouldRender ? (
+        <Modal visible transparent animationType="none" onRequestClose={closeDropdown}>
+          <Pressable className="flex-1" onPress={closeDropdown}>
+            <Animated.View
+              className="absolute rounded-lg border border-[#2D2D2D] bg-[#111111]"
+              style={[
+                {
+                  left: dropdownLayout.x,
+                  top: dropdownLayout.y,
+                  width: dropdownLayout.width,
+                },
+                animatedContentStyle,
+              ]}
+            >
+              <ScrollView nestedScrollEnabled style={{ maxHeight: dropdownLayout.maxHeight }}>
+                {options.map((option) => {
+                  const active = option.value === value;
+                  return (
+                    <Pressable
+                      key={option.value}
+                      onPress={() => {
+                        onValueChange(option.value);
+                        closeDropdown();
+                      }}
+                      className={`px-3 py-3 ${active ? 'bg-[#FF6B3522]' : 'bg-transparent'}`}
+                    >
+                      <Text className={`${active ? 'text-[#FF6B35]' : 'text-white'}`}>{option.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
+          </Pressable>
+        </Modal>
+      ) : null}
     </View>
   );
 }

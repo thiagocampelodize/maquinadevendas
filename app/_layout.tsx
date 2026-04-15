@@ -19,6 +19,18 @@ function Gate() {
   const segments = useSegments();
   const router = useRouter();
 
+  const replaceWithStage = (
+    href: "/(admin)" | "/(gestor)" | "/(vendedor)" | "/(auth)/onboarding/step1",
+    context: string
+  ) => {
+    markBootstrapStage("gate-route-redirect", {
+      context,
+      role: role ?? "unknown",
+      target: href,
+    });
+    router.replace(href);
+  };
+
   useEffect(() => {
     markBootstrapStage('root-gate-mounted');
   }, []);
@@ -36,7 +48,7 @@ function Gate() {
     const inAdminGroup = segments[0] === '(admin)';
     const isOnboardingRoute = segments.includes('onboarding');
     const mustOnboard = role === 'GESTOR' && !user?.company_id;
-    const isRootRoute = segments.length === 0;
+    const isRootRoute = !segments[0];
 
     markBootstrapStage('authenticated-route-evaluation', {
       role: role ?? 'unknown',
@@ -47,20 +59,20 @@ function Gate() {
     });
 
     if (inAdminGroup && role !== 'ADMIN') {
-      if (role === 'GESTOR') router.replace('/(gestor)');
-      if (role === 'VENDEDOR') router.replace('/(vendedor)');
+      if (role === 'GESTOR') replaceWithStage('/(gestor)', 'admin-group-protection');
+      if (role === 'VENDEDOR') replaceWithStage('/(vendedor)', 'admin-group-protection');
       return;
     }
 
     if (mustOnboard && !isOnboardingRoute) {
-      router.replace('/(auth)/onboarding/step1');
+      replaceWithStage('/(auth)/onboarding/step1', 'gestor-onboarding');
       return;
     }
 
     if ((inAuthGroup || isRootRoute) && !mustOnboard) {
-      if (role === 'ADMIN') router.replace('/(admin)');
-      if (role === 'GESTOR') router.replace('/(gestor)');
-      if (role === 'VENDEDOR') router.replace('/(vendedor)');
+      if (role === 'ADMIN') replaceWithStage('/(admin)', 'authenticated-root-or-auth');
+      if (role === 'GESTOR') replaceWithStage('/(gestor)', 'authenticated-root-or-auth');
+      if (role === 'VENDEDOR') replaceWithStage('/(vendedor)', 'authenticated-root-or-auth');
     }
   }, [isAuthenticated, loading, role, router, segments, user?.company_id]);
 

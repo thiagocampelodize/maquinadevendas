@@ -50,6 +50,7 @@ const initialState: AuthState = {
 };
 
 function navigateByRole(role: UserRole) {
+  markBootstrapStage("auth-role-redirect", { role });
   if (role === "ADMIN") router.replace("/(admin)");
   else if (role === "GESTOR") router.replace("/(gestor)");
   else if (role === "VENDEDOR") router.replace("/(vendedor)");
@@ -102,8 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(
     async (username: string, password: string): Promise<SignInResult> => {
+      markBootstrapStage("auth-sign-in-start", { admin_only: false });
       const result = await authService.signIn(username, password);
       if (!result.success || !result.user) {
+        markBootstrapStage("auth-sign-in-failed", { admin_only: false });
         return { success: false, error: result.error };
       }
 
@@ -117,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading: false,
       });
 
+      markBootstrapStage("auth-sign-in-success", { role: user.role, admin_only: false });
       navigateByRole(user.role);
 
       return { success: true, role: user.role };
@@ -126,8 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInAdmin = useCallback(
     async (username: string, password: string): Promise<SignInResult> => {
+      markBootstrapStage("auth-sign-in-start", { admin_only: true });
       const result = await authService.signInAdmin(username, password);
       if (!result.success || !result.user) {
+        markBootstrapStage("auth-sign-in-failed", { admin_only: true });
         return { success: false, error: result.error };
       }
 
@@ -141,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading: false,
       });
 
+      markBootstrapStage("auth-sign-in-success", { role: user.role, admin_only: true });
       navigateByRole(user.role);
 
       return { success: true, role: user.role };
@@ -149,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    markBootstrapStage("auth-sign-out");
     await authService.signOut();
     setState({ ...initialState, loading: false });
 

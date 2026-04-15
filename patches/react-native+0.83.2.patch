@@ -14,7 +14,7 @@ index 6646570..2f4ccab 100644
 +      const char *queueLabel = dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL);
 +      NSString *queueLabelString = queueLabel ? [NSString stringWithUTF8String:queueLabel] : @"<unknown queue>";
 +
-+      NSLog(@"[TurboModule Exception Swallowed] module=%@ selector=%@ mainThread=%@ queue=%@ thread=%@ exception=%@ reason=%@ userInfo=%@ callStack=%@",
++      NSLog(@"[TurboModule Exception] module=%@ selector=%@ mainThread=%@ queue=%@ thread=%@ exception=%@ reason=%@ userInfo=%@ callStack=%@",
 +            moduleClassName,
 +            selectorName,
 +            isMainThread ? @"YES" : @"NO",
@@ -24,6 +24,9 @@ index 6646570..2f4ccab 100644
 +            exception.reason ?: @"<nil reason>",
 +            exception.userInfo ?: @{},
 +            exception.callStackSymbols ?: @[]);
++#if RCT_DEV
++      throw convertNSExceptionToJSError(runtime, exception, std::string{moduleName}, methodNameStr);
++#endif
      } @finally {
        [retainedObjectsForInvocation removeAllObjects];
      }

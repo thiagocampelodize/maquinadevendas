@@ -151,6 +151,10 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
     }
   };
 
+  if (!shouldRender) {
+    return null;
+  }
+
   return (
     <Modal visible={shouldRender} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>

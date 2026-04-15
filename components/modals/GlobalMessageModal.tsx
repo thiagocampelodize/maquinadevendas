@@ -268,6 +268,10 @@ export function GlobalMessageModal({
     }
   };
 
+  if (!shouldRender) {
+    return null;
+  }
+
   return (
     <Modal
       visible={shouldRender}

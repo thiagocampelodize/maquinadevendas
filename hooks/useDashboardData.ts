@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { calculateLinearProjection } from '@/domain/forecast/forecastCalculator';
+import { captureBootstrapError, markBootstrapStage } from '@/lib/bootstrap-diagnostics';
 import { goalsService } from '@/services/goalsService';
 import { salesService } from '@/services/salesService';
 import { usersService } from '@/services/usersService';
@@ -101,6 +102,7 @@ export function useDashboardData(): DashboardData {
 
   const loadData = useCallback(async () => {
     if (!user?.company_id) {
+      markBootstrapStage('dashboard-load-skipped-no-company');
       setMonthlyGoal(0);
       setCurrentSales(0);
       setSalesTeam([]);
@@ -113,6 +115,7 @@ export function useDashboardData(): DashboardData {
 
     setIsLoading(true);
     setError(null);
+    markBootstrapStage('dashboard-load-start', { company_present: true });
 
     try {
       const startOfMonth = getStartOfMonthBrazil();
@@ -129,6 +132,10 @@ export function useDashboardData(): DashboardData {
         ),
         usersService.getSellersByCompany(user.company_id),
       ]);
+      markBootstrapStage('dashboard-load-queries-finished', {
+        sellers_count: companyUsers.length,
+        sales_rows: allMonthSales.length,
+      });
 
       const periodicGoalsMap = await getPeriodicGoalsMapWithBackfill(companyUsers, monthKey);
 
@@ -190,7 +197,13 @@ export function useDashboardData(): DashboardData {
 
       setSalesTeam(ranking);
       setLastUpdated(getBrazilDate());
+      markBootstrapStage('dashboard-load-success', {
+        sellers_count: ranking.length,
+        current_sales: Math.round(allMonthSales.reduce((sum, s) => sum + (s.value || 0), 0)),
+      });
     } catch (err: unknown) {
+      markBootstrapStage('dashboard-load-error');
+      captureBootstrapError(err, 'dashboard-load');
       setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
     } finally {
       setIsLoading(false);

@@ -31,6 +31,10 @@ export function RankingModal({ isOpen, onClose, salesTeam, currentDay, daysInMon
     return [...filtered].sort((a, b) => b.percentageOfGoal - a.percentageOfGoal);
   }, [rankingView, salesTeam, search]);
 
+  if (!shouldRender) {
+    return null;
+  }
+
   return (
     <Modal visible={shouldRender} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>

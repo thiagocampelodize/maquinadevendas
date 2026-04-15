@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DollarSign } from 'lucide-react-native';
-import { Animated, RefreshControl, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Platform, RefreshControl, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { HomeMetrics } from '@/components/home/HomeMetrics';
@@ -12,6 +12,7 @@ import { useEntranceAnimation } from '@/components/ui/useEntranceAnimation';
 import { ENTRANCE_ANIMATION_TOKENS } from '@/constants/animationTokens';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { markFirstScreenRendered } from '@/lib/bootstrap-diagnostics';
 
 export default function VendedorHomePage() {
   const router = useRouter();
@@ -24,11 +25,12 @@ export default function VendedorHomePage() {
   const [isStartingTask, setIsStartingTask] = useState(false);
   const [showRankingModal, setShowRankingModal] = useState(false);
   const startTaskTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const disableEntranceAnimation = Platform.OS === 'ios';
 
-  const headerStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 0 });
-  const metricsStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 1 });
-  const rankingStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 2 });
-  const actionsStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 3 });
+  const headerStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 0, disabled: disableEntranceAnimation });
+  const metricsStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 1, disabled: disableEntranceAnimation });
+  const rankingStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 2, disabled: disableEntranceAnimation });
+  const actionsStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 3, disabled: disableEntranceAnimation });
 
   const {
     isLoading,
@@ -48,6 +50,10 @@ export default function VendedorHomePage() {
     daysInMonth,
     reload,
   } = useDashboardData();
+
+  useEffect(() => {
+    markFirstScreenRendered('vendedor-dashboard');
+  }, []);
 
   const status = useMemo(() => {
     if (monthlyGoal === 0) {
@@ -132,7 +138,7 @@ export default function VendedorHomePage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <View className="flex-1 bg-black">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
@@ -241,6 +247,6 @@ export default function VendedorHomePage() {
         currentDay={currentDay}
         daysInMonth={daysInMonth}
       />
-    </SafeAreaView>
+    </View>
   );
 }
