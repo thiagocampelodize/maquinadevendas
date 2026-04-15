@@ -2,7 +2,7 @@ workflows:
   ios-build:
     name: iOS Build
     environment:
-      node: 18
+      node: 20.19.4
       xcode: 16.2
       groups:
         - app_env
@@ -15,7 +15,7 @@ workflows:
 
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: npm ci
 
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --non-interactive
