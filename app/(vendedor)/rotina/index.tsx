@@ -126,9 +126,9 @@ export default function VendedorChecklistPage() {
 
   if (!user?.company_id) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8">
         <Text className="mb-2 text-xl font-bold text-white">Rotina indisponível</Text>
-        <Text className="text-center text-[#9CA3AF]">
+        <Text className="text-center text-text-muted">
           Sua conta não tem empresa vinculada. É necessário ter uma empresa para gerar a rotina diária.
         </Text>
       </SafeAreaView>
@@ -136,7 +136,7 @@ export default function VendedorChecklistPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}
@@ -154,7 +154,7 @@ export default function VendedorChecklistPage() {
           <ChecklistProgress completedCount={completedCount} totalCount={totalCount} activePeriod={activePeriod} />
         </Animated.View>
 
-        {isLoading ? <Text className="text-center text-[#9CA3AF]">Carregando tarefas...</Text> : null}
+        {isLoading ? <Text className="text-center text-text-muted">Carregando tarefas...</Text> : null}
         {error ? <Text className="text-center text-red-500">{error}</Text> : null}
 
         {!isLoading ? (
@@ -199,7 +199,7 @@ export default function VendedorChecklistPage() {
           onRequestClose={() => setShowCompletionModal(false)}
         >
           <Animated.View className="flex-1 items-center justify-center bg-black/80 px-5" style={completionBackdropStyle}>
-            <Animated.View className="w-full rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5" style={completionContentStyle}>
+            <Animated.View className="w-full rounded-2xl border border-border bg-surface p-5" style={completionContentStyle}>
               <View className="mb-4 flex-row items-center gap-2">
                 <TrendingUp stroke="#22C55E" size={20} />
                 <Text className="text-base font-semibold text-green-300">Parabéns! Rotina completa</Text>
@@ -234,7 +234,7 @@ export default function VendedorChecklistPage() {
           onRequestClose={() => setShowTaskDetailsModal(false)}
         >
           <Animated.View className="flex-1 items-center justify-center bg-black/80 px-5" style={taskDetailsBackdropStyle}>
-            <Animated.View className="w-full rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5" style={taskDetailsContentStyle}>
+            <Animated.View className="w-full rounded-2xl border border-border bg-surface p-5" style={taskDetailsContentStyle}>
               <View className="mb-4 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
                   <BookOpen stroke="#FF6B35" size={20} />

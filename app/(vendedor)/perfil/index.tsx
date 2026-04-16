@@ -31,20 +31,20 @@ export default function VendedorProfilePage() {
   }, [user?.name]);
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-xl font-semibold text-white">Meu Perfil</Text>
-          <Text className="mt-1 text-sm text-[#9CA3AF]">Gerencie seus dados e acompanhe seu desempenho.</Text>
+          <Text className="mt-1 text-sm text-text-muted">Gerencie seus dados e acompanhe seu desempenho.</Text>
 
-          <View className="mt-4 flex-row items-center gap-3 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+          <View className="mt-4 flex-row items-center gap-3 rounded-xl border border-border bg-card p-3">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-[#FF6B35]">
               <Text className="text-base font-bold text-white">{initials}</Text>
             </View>
             <View className="flex-1">
               <Text className="text-base font-semibold text-white">{user?.name || 'Vendedor'}</Text>
-              <Text className="text-sm text-[#9CA3AF]">{user?.email || '-'}</Text>
-              <Text className="mt-1 text-xs text-[#6B7280]">Empresa: {companyName || 'Carregando...'}</Text>
+              <Text className="text-sm text-text-muted">{user?.email || '-'}</Text>
+              <Text className="mt-1 text-xs text-text-faint">Empresa: {companyName || 'Carregando...'}</Text>
             </View>
           </View>
         </View>
@@ -84,13 +84,13 @@ function MenuCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable className="rounded-2xl border border-[#2D2D2D] bg-[#111111]" onPress={onPress}>
+    <Pressable className="rounded-2xl border border-border bg-surface" onPress={onPress}>
       <View className="w-full flex-row items-center justify-between p-4">
         <View className="flex-1 flex-row items-start gap-3">
           <View className="mt-0.5">{icon}</View>
           <View className="flex-1">
             <Text className="text-base font-semibold text-white">{title}</Text>
-            <Text className="mt-1 text-sm text-[#9CA3AF]">{subtitle}</Text>
+            <Text className="mt-1 text-sm text-text-muted">{subtitle}</Text>
           </View>
         </View>
         <ChevronRight size={18} color="#6B7280" />

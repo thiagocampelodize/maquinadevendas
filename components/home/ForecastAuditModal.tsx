@@ -109,10 +109,10 @@ export function ForecastAuditModal({
     <Modal visible={shouldRender} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 48), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">Auditoria de Previsao</Text>
             <Pressable onPress={onClose}>
               <X stroke="#FFFFFF" size={20} />
@@ -120,12 +120,12 @@ export function ForecastAuditModal({
           </View>
 
           <ScrollView className="flex-1 p-4" contentContainerStyle={{ gap: 10, paddingBottom: 28 }}>
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
-              <Text className="mb-1 text-sm text-[#9CA3AF]">Formula oficial</Text>
+            <View className="rounded-xl border border-border bg-card p-4">
+              <Text className="mb-1 text-sm text-text-muted">Formula oficial</Text>
               <Text className="text-sm text-white">Previsao = (Vendido acumulado / Dia atual) * Dias do mes</Text>
             </View>
 
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+            <View className="rounded-xl border border-border bg-card p-4">
               <Text className="mb-3 text-base text-white">Time (Consolidado)</Text>
               <View className="flex-row flex-wrap gap-2">
                 <Cell label="Vendido" value={teamForecast.currentSales} money />
@@ -137,13 +137,13 @@ export function ForecastAuditModal({
               </View>
             </View>
 
-            <View className="gap-2 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+            <View className="gap-2 rounded-xl border border-border bg-card p-3">
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Buscar vendedor..."
                 placeholderTextColor="#6B7280"
-                className="rounded-lg border border-[#2D2D2D] bg-[#111111] px-3 py-2 text-white"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-white"
               />
 
               <View className="flex-row gap-2">
@@ -180,18 +180,18 @@ export function ForecastAuditModal({
             </View>
 
             {summaryAndRows.rows.length === 0 ? (
-              <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
-                <Text className="text-center text-sm text-[#9CA3AF]">
+              <View className="rounded-xl border border-border bg-card p-4">
+                <Text className="text-center text-sm text-text-muted">
                   Nenhum vendedor encontrado com os filtros atuais.
                 </Text>
               </View>
             ) : null}
 
             {summaryAndRows.rows.map((row, idx) => (
-              <View key={row.seller.id} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+              <View key={row.seller.id} className="rounded-xl border border-border bg-card p-3">
                 <View className="mb-2 flex-row items-center justify-between">
                   <Text className="text-white">{idx + 1}. {row.seller.name}</Text>
-                  <Text className={`text-xs ${row.willHitGoal ? 'text-green-400' : row.goalIsValid ? 'text-red-400' : 'text-[#9CA3AF]'}`}>
+                  <Text className={`text-xs ${row.willHitGoal ? 'text-green-400' : row.goalIsValid ? 'text-red-400' : 'text-text-muted'}`}>
                     {row.goalIsValid ? (row.willHitGoal ? 'Bate meta' : 'Nao bate') : 'Sem meta'}
                   </Text>
                 </View>
@@ -217,9 +217,9 @@ function FilterPill({ label, active, onPress }: { label: string; active: boolean
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-full px-3 py-1 ${active ? 'bg-[#FF6B35]' : 'bg-[#262626]'}`}
+      className={`rounded-full px-3 py-1 ${active ? 'bg-[#FF6B35]' : 'bg-card-elevated'}`}
     >
-      <Text className={`text-xs ${active ? 'text-white' : 'text-[#9CA3AF]'}`}>{label}</Text>
+      <Text className={`text-xs ${active ? 'text-white' : 'text-text-muted'}`}>{label}</Text>
     </Pressable>
   );
 }
@@ -238,7 +238,7 @@ function Badge({
       ? 'bg-green-900/30 text-green-300'
       : tone === 'negative'
         ? 'bg-red-900/30 text-red-300'
-        : 'bg-[#262626] text-[#D1D5DB]';
+        : 'bg-card-elevated text-text-secondary';
 
   return (
     <View className={`rounded-full px-2 py-1 ${className}`}>
@@ -256,8 +256,8 @@ function Cell({ label, value, money, highlight }: { label: string; value: number
         : value.toLocaleString('pt-BR');
 
   return (
-    <View className={`min-w-[95px] rounded-md p-2 ${highlight ? 'bg-[#FF6B351A]' : 'bg-[#262626]'}`}>
-      <Text className="text-[11px] text-[#9CA3AF]">{label}</Text>
+    <View className={`min-w-[95px] rounded-md p-2 ${highlight ? 'bg-[#FF6B351A]' : 'bg-card-elevated'}`}>
+      <Text className="text-[11px] text-text-muted">{label}</Text>
       <Text className={`text-xs font-semibold ${highlight ? 'text-[#FF6B35]' : 'text-white'}`}>{text}</Text>
     </View>
   );

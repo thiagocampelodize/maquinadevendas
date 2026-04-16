@@ -28,19 +28,19 @@ export default function CompanyDetailsPage() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black" edges={['left', 'right']}>
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['left', 'right']}>
         <ActivityIndicator color="#FF6B35" />
-        <Text className="mt-2 text-sm text-[#9CA3AF]">Carregando detalhes...</Text>
+        <Text className="mt-2 text-sm text-text-muted">Carregando detalhes...</Text>
       </SafeAreaView>
     );
   }
 
   if (!company) {
     return (
-      <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+      <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-lg font-semibold text-white">Empresa não encontrada</Text>
-          <Text className="mt-2 text-center text-sm text-[#9CA3AF]">O identificador informado não corresponde a uma empresa cadastrada.</Text>
+          <Text className="mt-2 text-center text-sm text-text-muted">O identificador informado não corresponde a uma empresa cadastrada.</Text>
           <Button className="mt-4" onPress={() => router.replace('/(admin)/companies')}>
             Voltar para empresas
           </Button>
@@ -50,18 +50,18 @@ export default function CompanyDetailsPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <Pressable className="mb-1 flex-row items-center gap-2" onPress={() => router.replace('/(admin)/companies')}>
           <ArrowLeft size={16} color="#9CA3AF" />
-          <Text className="text-sm text-[#9CA3AF]">Voltar para empresas</Text>
+          <Text className="text-sm text-text-muted">Voltar para empresas</Text>
         </Pressable>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-xl font-semibold text-white">{company.name}</Text>
-          <Text className="mt-1 text-sm text-[#9CA3AF]">Detalhes principais da organização no painel administrativo.</Text>
+          <Text className="mt-1 text-sm text-text-muted">Detalhes principais da organização no painel administrativo.</Text>
 
-          <View className="mt-4 gap-2 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+          <View className="mt-4 gap-2 rounded-xl border border-border bg-card p-3">
             <Info label="Gestor" value={company.managerName} />
             <Info label="Email" value={company.email} />
             <Info label="Plano" value={company.plan} />
@@ -79,7 +79,7 @@ export default function CompanyDetailsPage() {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-center justify-between gap-3">
-      <Text className="text-xs text-[#9CA3AF]">{label}</Text>
+      <Text className="text-xs text-text-muted">{label}</Text>
       <Text className="text-sm font-medium text-white">{value}</Text>
     </View>
   );

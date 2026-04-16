@@ -21,15 +21,15 @@ export function AdminStatCard({ title, value, icon: Icon, tone = 'orange', subti
   const palette = toneStyles[tone];
 
   return (
-    <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+    <View className="rounded-2xl border border-border bg-surface p-4">
       <View className="mb-3 flex-row items-start justify-between gap-3">
-        <Text className="flex-1 text-sm text-[#9CA3AF]">{title}</Text>
+        <Text className="flex-1 text-sm text-text-muted">{title}</Text>
         <View className="rounded-lg p-2" style={{ backgroundColor: palette.bg }}>
           <Icon size={16} color={palette.icon} />
         </View>
       </View>
       <Text className="text-2xl font-bold text-white">{value}</Text>
-      {subtitle ? <Text className="mt-1 text-xs text-[#6B7280]">{subtitle}</Text> : null}
+      {subtitle ? <Text className="mt-1 text-xs text-text-faint">{subtitle}</Text> : null}
     </View>
   );
 }

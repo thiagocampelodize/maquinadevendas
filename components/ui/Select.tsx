@@ -54,7 +54,7 @@ export function Select({ label, value, options, placeholder = 'Selecione...', on
 
   return (
     <View ref={anchorRef} collapsable={false}>
-      {label ? <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text> : null}
+      {label ? <Text className="mb-2 text-sm text-text-secondary">{label}</Text> : null}
 
       <Pressable
         onPress={() => {
@@ -67,9 +67,9 @@ export function Select({ label, value, options, placeholder = 'Selecione...', on
             openDropdown();
           }
         }}
-        className={`h-12 flex-row items-center justify-between rounded-lg border border-[#2D2D2D] px-3 ${disabled ? 'bg-[#141414] opacity-50' : 'bg-[#1A1A1A]'}`}
+        className={`h-12 flex-row items-center justify-between rounded-lg border border-border px-3 ${disabled ? 'bg-[#141414] opacity-50' : 'bg-card'}`}
       >
-        <Text className={`${value ? 'text-white' : 'text-[#6B7280]'}`}>{selectedLabel}</Text>
+        <Text className={`${value ? 'text-white' : 'text-text-faint'}`}>{selectedLabel}</Text>
         <ChevronDown stroke="#9CA3AF" size={16} />
       </Pressable>
 
@@ -77,7 +77,7 @@ export function Select({ label, value, options, placeholder = 'Selecione...', on
         <Modal visible transparent animationType="none" onRequestClose={closeDropdown}>
           <Pressable className="flex-1" onPress={closeDropdown}>
             <Animated.View
-              className="absolute rounded-lg border border-[#2D2D2D] bg-[#111111]"
+              className="absolute rounded-lg border border-border bg-surface"
               style={[
                 {
                   left: dropdownLayout.x,

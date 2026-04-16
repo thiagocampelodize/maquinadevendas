@@ -5,10 +5,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: '#0A0A0A',
-        card: '#1A1A1A',
-        border: '#2D2D2D',
+        background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
+        card: 'var(--color-card)',
+        'card-elevated': 'var(--color-card-elevated)',
+        border: 'var(--color-border)',
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        'text-muted': 'var(--color-text-muted)',
+        'text-faint': 'var(--color-text-faint)',
         primary: '#FF6B35',
+        // compat legado
+        bg: '#0A0A0A',
       },
     },
   },

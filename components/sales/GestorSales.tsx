@@ -12,7 +12,7 @@ import { ENTRANCE_ANIMATION_TOKENS } from '@/constants/animationTokens';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
 import { goalsService } from '@/services/goalsService';
-import { salesService, type Sale } from '@/services/salesService';
+import { salesService, type Sale, type SalesSummary } from '@/services/salesService';
 import { settingsService } from '@/services/settingsService';
 import { usersService } from '@/services/usersService';
 import { getPeriodicGoalsMapWithBackfill, resolveSellerGoals } from '@/utils/periodicGoals';
@@ -73,6 +73,13 @@ export function GestorSales() {
   const [isDeletingSale, setIsDeletingSale] = useState(false);
   const [retroactiveDaysLimit, setRetroactiveDaysLimit] = useState(30);
   const loadIdRef = useRef(0);
+
+  // Resumo do mês (colapsável)
+  const monthSummaryOptions = useMemo(() => buildMonthOptions(), []);
+  const [showMonthSummary, setShowMonthSummary] = useState(false);
+  const [summaryMonth, setSummaryMonth] = useState(monthSummaryOptions[0]?.value || '');
+  const [monthSummary, setMonthSummary] = useState<SalesSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const panelEntranceStyle = useEntranceAnimation({
     ...ENTRANCE_ANIMATION_TOKENS.sales,
     index: 0,
@@ -174,6 +181,24 @@ export function GestorSales() {
     };
   }, [companyId, selectedDate]);
 
+  useEffect(() => {
+    if (!companyId || !showMonthSummary || !summaryMonth) return;
+    let cancelled = false;
+    const loadSummary = async () => {
+      setSummaryLoading(true);
+      try {
+        const data = await salesService.getMonthSummary(companyId, summaryMonth);
+        if (!cancelled) setMonthSummary(data);
+      } finally {
+        if (!cancelled) setSummaryLoading(false);
+      }
+    };
+    void loadSummary();
+    return () => {
+      cancelled = true;
+    };
+  }, [companyId, showMonthSummary, summaryMonth]);
+
   const [selectedYear, selectedMonth] = selectedDate.slice(0, 7).split('-').map(Number);
   const daysInSelectedMonth = getDaysInMonthFor(selectedYear, Math.max(0, selectedMonth - 1));
   const dailyGoal = monthlyGoal > 0 ? Math.round((monthlyGoal / daysInSelectedMonth) * 100) / 100 : 0;
@@ -271,27 +296,27 @@ export function GestorSales() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator color="#FF6B35" size="large" />
-        <Text className="mt-2 text-sm text-[#9CA3AF]">Carregando painel de vendas...</Text>
+        <Text className="mt-2 text-sm text-text-muted">Carregando painel de vendas...</Text>
       </View>
     );
   }
 
   return (
     <ScrollView
-      className="flex-1 bg-black"
+      className="flex-1 bg-background"
       contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 8 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />}
     >
       {!companyId ? (
-        <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-6">
+        <View className="rounded-xl border border-[#404040] bg-card p-6">
           <Text className="text-center text-lg text-white">Empresa nao vinculada</Text>
-          <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Entre em contato com o administrador do sistema.</Text>
+          <Text className="mt-2 text-center text-sm text-text-muted">Entre em contato com o administrador do sistema.</Text>
         </View>
       ) : (
         <>
-          <Animated.View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-5" style={panelEntranceStyle}>
+          <Animated.View className="rounded-xl border border-[#404040] bg-card p-5" style={panelEntranceStyle}>
             <View className="mb-4 flex-row items-start justify-between gap-3">
               <View className="flex-1">
                 <Text className="text-2xl font-semibold text-white">💰 Painel de Vendas</Text>
@@ -313,16 +338,16 @@ export function GestorSales() {
               Permitido lancar vendas de hoje e dos ultimos {retroactiveDaysLimit} {retroactiveDaysLimit === 1 ? 'dia' : 'dias'}.
             </Text>
 
-            <View className="mt-4 rounded-xl border border-[#404040] bg-[#262626] p-4">
+            <View className="mt-4 rounded-xl border border-[#404040] bg-card-elevated p-4">
               <View className="mb-3 flex-row items-end justify-between">
                 <View>
-                  <Text className="text-xs text-[#9CA3AF]">Meta da Empresa (Dia)</Text>
+                  <Text className="text-xs text-text-muted">Meta da Empresa (Dia)</Text>
                   <Text className="text-xl font-bold text-white">
                     {dailyGoal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </Text>
                 </View>
                 <View>
-                  <Text className="text-xs text-[#9CA3AF]">Realizado</Text>
+                  <Text className="text-xs text-text-muted">Realizado</Text>
                   <Text className="text-xl font-bold text-[#FF6B35]">
                     {totalSalesAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </Text>
@@ -343,6 +368,90 @@ export function GestorSales() {
             </View>
           </Animated.View>
 
+          <View className="rounded-xl border border-[#404040] bg-card">
+            <Pressable
+              className="flex-row items-center justify-between p-4"
+              onPress={() => setShowMonthSummary((prev) => !prev)}
+            >
+              <View className="flex-row items-center gap-2">
+                <BarChart3 stroke="#FF6B35" size={18} />
+                <Text className="text-base text-white">Resumo do Mês</Text>
+              </View>
+              {showMonthSummary ? (
+                <ChevronUp stroke="#9CA3AF" size={18} />
+              ) : (
+                <ChevronDown stroke="#9CA3AF" size={18} />
+              )}
+            </Pressable>
+
+            {showMonthSummary ? (
+              <View className="gap-3 border-t border-[#404040] p-4">
+                <Select
+                  label="Mês"
+                  value={summaryMonth}
+                  options={monthSummaryOptions}
+                  onValueChange={setSummaryMonth}
+                />
+
+                {summaryLoading ? (
+                  <View className="flex-row items-center gap-2 py-3">
+                    <ActivityIndicator size="small" color="#FF6B35" />
+                    <Text className="text-sm text-text-muted">Carregando resumo...</Text>
+                  </View>
+                ) : !monthSummary || monthSummary.count === 0 ? (
+                  <View className="items-center rounded-xl border border-[#404040] bg-card-elevated p-5">
+                    <TrendingUp stroke="#6B7280" size={24} />
+                    <Text className="mt-2 text-sm text-text-muted">Nenhuma venda no mês selecionado.</Text>
+                  </View>
+                ) : (
+                  <>
+                    <View className="rounded-xl border border-[#404040] bg-card-elevated p-4">
+                      <Text className="text-xs text-text-muted">Total do mês</Text>
+                      <Text className="text-2xl font-bold text-[#FF6B35]">
+                        {monthSummary.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </Text>
+                      <Text className="mt-1 text-xs text-text-muted">
+                        {monthSummary.count} venda(s) • ticket médio {monthSummary.average.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </Text>
+                    </View>
+
+                    <View className="rounded-xl border border-[#404040] bg-card-elevated p-4">
+                      <Text className="mb-2 text-xs text-text-muted">Por período</Text>
+                      {(['morning', 'noon', 'afternoon', 'night'] as const).map((p) => (
+                        <View key={p} className="flex-row items-center justify-between py-1">
+                          <Text className="text-sm text-text-secondary">{PERIOD_LABELS[p]}</Text>
+                          <Text className="text-sm text-white">
+                            {monthSummary.byPeriod[p].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+
+                    <View className="rounded-xl border border-[#404040] bg-card-elevated p-4">
+                      <Text className="mb-2 text-xs text-text-muted">Ranking de vendedores</Text>
+                      {[...monthSummary.bySeller]
+                        .sort((a, b) => b.total - a.total)
+                        .map((row, idx) => (
+                          <View key={row.seller_id} className="flex-row items-center justify-between py-1.5">
+                            <View className="flex-1 flex-row items-center gap-2">
+                              <Text className="w-6 text-sm font-bold text-[#FF6B35]">#{idx + 1}</Text>
+                              <Text className="flex-1 text-sm text-white" numberOfLines={1}>{row.seller_name}</Text>
+                            </View>
+                            <View className="items-end">
+                              <Text className="text-sm text-white">
+                                {row.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              </Text>
+                              <Text className="text-xs text-text-muted">{row.count} venda(s)</Text>
+                            </View>
+                          </View>
+                        ))}
+                    </View>
+                  </>
+                )}
+              </View>
+            ) : null}
+          </View>
+
           <Animated.View style={ctaEntranceStyle}>
             <Button
               className="h-14 rounded-2xl"
@@ -356,23 +465,23 @@ export function GestorSales() {
             </Button>
           </Animated.View>
 
-          <Animated.View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-4" style={tableEntranceStyle}>
+          <Animated.View className="rounded-xl border border-[#404040] bg-card p-4" style={tableEntranceStyle}>
             <View className="mb-3 flex-row items-center gap-2">
               <BarChart3 stroke="#FF6B35" size={18} />
               <Text className="text-base text-white">Vendas por Vendedor ({dailySales.length})</Text>
             </View>
 
             {sellers.length === 0 ? (
-              <View className="items-center rounded-xl border border-[#404040] bg-[#262626] p-5">
+              <View className="items-center rounded-xl border border-[#404040] bg-card-elevated p-5">
                 <Users stroke="#6B7280" size={28} />
-                <Text className="mt-2 text-sm text-[#9CA3AF]">Nenhum vendedor encontrado.</Text>
+                <Text className="mt-2 text-sm text-text-muted">Nenhum vendedor encontrado.</Text>
               </View>
             ) : null}
 
             {sellers.length > 0 && dailySales.length === 0 ? (
-              <View className="items-center rounded-xl border border-[#404040] bg-[#262626] p-5">
+              <View className="items-center rounded-xl border border-[#404040] bg-card-elevated p-5">
                 <TrendingUp stroke="#6B7280" size={28} />
-                <Text className="mt-2 text-sm text-[#9CA3AF]">
+                <Text className="mt-2 text-sm text-text-muted">
                   {selectedDate === today ? 'Nenhuma venda registrada hoje' : 'Nenhuma venda registrada na data selecionada'}
                 </Text>
               </View>
@@ -391,15 +500,15 @@ export function GestorSales() {
                   if (item.type === 'sale') {
                     const extras = formatSaleExtras(item.sale.rawSale);
                     return (
-                      <View className="mb-2 ml-3 flex-row items-center justify-between rounded-lg bg-[#1A1A1A] p-2">
+                      <View className="mb-2 ml-3 flex-row items-center justify-between rounded-lg bg-card p-2">
                         <View>
                           <Text className={`${item.sale.amount < 0 ? 'text-red-500' : 'text-white'}`}>
                             {item.sale.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                           </Text>
-                          <Text className="text-xs text-[#9CA3AF]">
+                          <Text className="text-xs text-text-muted">
                             {new Date(item.sale.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </Text>
-                          {extras ? <Text className="mt-1 text-[11px] text-[#9CA3AF]">{extras}</Text> : null}
+                          {extras ? <Text className="mt-1 text-[11px] text-text-muted">{extras}</Text> : null}
                         </View>
                         <View className="flex-row gap-2">
                           <Pressable onPress={() => setEditingSale(item.sale.rawSale)}>
@@ -414,7 +523,7 @@ export function GestorSales() {
                   }
 
                   return (
-                    <View className="mb-2 rounded-xl border border-[#404040] bg-[#262626] p-3">
+                    <View className="mb-2 rounded-xl border border-[#404040] bg-card-elevated p-3">
                       <View className="mb-2 flex-row items-center justify-between">
                         <Text className="text-white">{item.seller.name}</Text>
                         <Text className={`text-xs ${item.sellerProgress >= 100 ? 'text-green-400' : 'text-[#a3a3a3]'}`}>
@@ -437,7 +546,7 @@ export function GestorSales() {
 
                       {item.salesCount > 0 ? (
                         <Pressable
-                          className="mt-2 flex-row items-center justify-center gap-1 rounded-lg border border-[#404040] bg-[#1A1A1A] py-2"
+                          className="mt-2 flex-row items-center justify-center gap-1 rounded-lg border border-[#404040] bg-card py-2"
                           onPress={() => setExpandedSeller(item.isExpanded ? null : item.seller.id)}
                         >
                           {item.isExpanded ? <ChevronUp stroke="#9CA3AF" size={14} /> : <ChevronDown stroke="#9CA3AF" size={14} />}
@@ -453,8 +562,8 @@ export function GestorSales() {
             ) : null}
           </Animated.View>
 
-          <Animated.View className="rounded-lg border border-[#404040] bg-[#1a1a1a] p-3" style={tipEntranceStyle}>
-            <Text className="text-xs text-[#9CA3AF]">
+          <Animated.View className="rounded-lg border border-[#404040] bg-card p-3" style={tipEntranceStyle}>
+            <Text className="text-xs text-text-muted">
               💡 Dica: Lance as vendas de cada vendedor ao final de cada turno para manter o painel atualizado em tempo real.
             </Text>
           </Animated.View>
@@ -501,6 +610,25 @@ export function GestorSales() {
     </ScrollView>
   );
 }
+
+function buildMonthOptions() {
+  const options: Array<{ label: string; value: string }> = [];
+  const base = new Date();
+  for (let i = 0; i < 8; i += 1) {
+    const d = new Date(base.getFullYear(), base.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase());
+    options.push({ label, value });
+  }
+  return options;
+}
+
+const PERIOD_LABELS: Record<'morning' | 'noon' | 'afternoon' | 'night', string> = {
+  morning: 'Manhã',
+  noon: 'Almoço',
+  afternoon: 'Tarde',
+  night: 'Noite',
+};
 
 function buildDateOptions(minDate: string, maxDate: string) {
   const options: Array<{ label: string; value: string }> = [];

@@ -32,16 +32,16 @@ export default function GestorProfilePage() {
   const actionsStyle = useEntranceAnimation({ ...ENTRANCE_ANIMATION_TOKENS.dashboard, index: 1 });
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
-        <Animated.View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4" style={headerStyle}>
+        <Animated.View className="rounded-2xl border border-border bg-surface p-4" style={headerStyle}>
           <Text className="text-xl font-semibold text-white">Perfil do Gestor</Text>
           <Text className="mt-1 text-sm text-[#A3A3A3]">Gerencie metas, vendedores, empresa e assinatura.</Text>
 
-          <View className="mt-4 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+          <View className="mt-4 rounded-xl border border-border bg-card p-3">
             <Text className="text-base font-semibold text-white">{user?.name || 'Gestor'}</Text>
-            <Text className="mt-1 text-sm text-[#9CA3AF]">{user?.email || '-'}</Text>
-            <Text className="mt-1 text-xs text-[#6B7280]">Empresa: {companyName || 'Carregando...'}</Text>
+            <Text className="mt-1 text-sm text-text-muted">{user?.email || '-'}</Text>
+            <Text className="mt-1 text-xs text-text-faint">Empresa: {companyName || 'Carregando...'}</Text>
           </View>
         </Animated.View>
 
@@ -93,13 +93,13 @@ function ProfileActionCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable className="rounded-2xl border border-[#2D2D2D] bg-[#111111]" onPress={onPress}>
+    <Pressable className="rounded-2xl border border-border bg-surface" onPress={onPress}>
       <View className="w-full flex-row items-center justify-between p-4">
         <View className="flex-1 flex-row items-start gap-3">
           <View className="mt-0.5">{icon}</View>
           <View className="flex-1">
             <Text className="text-left text-base font-semibold text-white">{title}</Text>
-            <Text className="mt-1 text-left text-sm text-[#9CA3AF]">{subtitle}</Text>
+            <Text className="mt-1 text-left text-sm text-text-muted">{subtitle}</Text>
           </View>
         </View>
         <ChevronRight size={18} color="#6B7280" />

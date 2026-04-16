@@ -26,6 +26,14 @@ function syncScope() {
   });
 }
 
+export function getBootstrapCheckpoints(): BootstrapCheckpoint[] {
+  return checkpoints.slice();
+}
+
+export function hasFirstScreenRendered(): boolean {
+  return firstScreenRendered;
+}
+
 export function markBootstrapStage(
   stage: string,
   data?: Record<string, string | number | boolean | null>

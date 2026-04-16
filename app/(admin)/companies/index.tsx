@@ -118,7 +118,7 @@ export default function CompaniesManagementPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <FlatList
         data={loading ? [] : filtered}
         keyExtractor={(item) => item.id}
@@ -129,9 +129,9 @@ export default function CompaniesManagementPage() {
         contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
         ListHeaderComponent={
           <View className="gap-4">
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <Text className="text-xl font-semibold text-white">Empresas / Gestores</Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">Controle de organizações, contrato, status e faturamento.</Text>
+              <Text className="mt-1 text-sm text-text-muted">Controle de organizações, contrato, status e faturamento.</Text>
             </View>
 
             <View className="gap-3">
@@ -140,7 +140,7 @@ export default function CompaniesManagementPage() {
               <AdminStatCard title="Em Risco" value={`${companies.filter((item) => item.status === 'Atraso' || item.status === 'Suspensa').length}`} icon={Building2} tone="red" />
             </View>
 
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <Text className="mb-3 text-base font-semibold text-white">Filtros</Text>
               <View className="gap-3">
                 <Select
@@ -150,8 +150,8 @@ export default function CompaniesManagementPage() {
                   options={['Todos', ...statusOptions].map((value) => ({ label: value, value }))}
                 />
                 <View>
-                  <Text className="mb-2 text-sm text-[#D1D5DB]">Buscar</Text>
-                  <View className="h-12 flex-row items-center rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3">
+                  <Text className="mb-2 text-sm text-text-secondary">Buscar</Text>
+                  <View className="h-12 flex-row items-center rounded-lg border border-border bg-card px-3">
                     <Search size={16} color="#6B7280" />
                     <TextInput
                       className="ml-2 flex-1 text-white"
@@ -165,34 +165,34 @@ export default function CompaniesManagementPage() {
               </View>
             </View>
 
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <Text className="text-base font-semibold text-white">Lista de empresas</Text>
-              <Text className="mt-1 text-xs text-[#6B7280]">{filtered.length} registro(s) encontrado(s).</Text>
+              <Text className="mt-1 text-xs text-text-faint">{filtered.length} registro(s) encontrado(s).</Text>
             </View>
           </View>
         }
         ItemSeparatorComponent={() => <View className="h-2" />}
         renderItem={({ item: company }) => (
-          <Pressable className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3" onPress={() => router.push(`/(admin)/companies/${company.id}`)}>
+          <Pressable className="rounded-xl border border-border bg-card p-3" onPress={() => router.push(`/(admin)/companies/${company.id}`)}>
             <Text className="text-sm font-semibold text-white">{company.name}</Text>
-            <Text className="mt-1 text-xs text-[#9CA3AF]">Gestor: {company.managerName}</Text>
-            <Text className="text-xs text-[#9CA3AF]">Plano: {company.plan} • Usuários: {company.usersCount}</Text>
+            <Text className="mt-1 text-xs text-text-muted">Gestor: {company.managerName}</Text>
+            <Text className="text-xs text-text-muted">Plano: {company.plan} • Usuários: {company.usersCount}</Text>
 
             <View className="mt-2 flex-row items-center justify-between">
               <StatusBadge status={company.status} />
-              <Text className="text-xs text-[#6B7280]">Próx. cobrança: {company.nextBilling || '-'}</Text>
+              <Text className="text-xs text-text-faint">Próx. cobrança: {company.nextBilling || '-'}</Text>
             </View>
 
             <View className="mt-3 flex-row gap-2">
               <Pressable
-                className="h-9 flex-1 flex-row items-center justify-center gap-2 rounded-lg border border-[#2D2D2D] bg-[#111111]"
+                className="h-9 flex-1 flex-row items-center justify-center gap-2 rounded-lg border border-border bg-surface"
                 onPress={(event) => {
                   event.stopPropagation();
                   openEditModal(company);
                 }}
               >
                 <Pencil size={13} color="#D1D5DB" />
-                <Text className="text-xs font-semibold text-[#D1D5DB]">Editar</Text>
+                <Text className="text-xs font-semibold text-text-secondary">Editar</Text>
               </Pressable>
               <Pressable
                 className="h-9 flex-1 flex-row items-center justify-center gap-2 rounded-lg border border-[#7F1D1D] bg-[#2A0F0F]"
@@ -217,11 +217,11 @@ export default function CompaniesManagementPage() {
           loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
-              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando empresas...</Text>
+              <Text className="mt-2 text-center text-sm text-text-muted">Carregando empresas...</Text>
             </View>
           ) : (
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#111111] p-4">
-              <Text className="py-2 text-center text-sm text-[#9CA3AF]">Nenhuma empresa para os filtros aplicados.</Text>
+            <View className="rounded-xl border border-border bg-surface p-4">
+              <Text className="py-2 text-center text-sm text-text-muted">Nenhuma empresa para os filtros aplicados.</Text>
             </View>
           )
         }
@@ -232,19 +232,19 @@ export default function CompaniesManagementPage() {
           <Animated.View style={animatedBackdropStyle} className="flex-1 bg-black/80">
             <Animated.View
               style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
-              className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111] p-4"
+              className="flex-1 rounded-t-2xl border border-border bg-surface p-4"
             >
               <Text className="text-lg font-semibold text-white">Editar empresa</Text>
 
               <View className="mt-4 gap-3">
                 <View>
-                  <Text className="mb-2 text-sm text-[#D1D5DB]">Nome</Text>
+                  <Text className="mb-2 text-sm text-text-secondary">Nome</Text>
                   <TextInput
                     value={editingName}
                     onChangeText={setEditingName}
                     placeholder="Nome da empresa"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </View>
 

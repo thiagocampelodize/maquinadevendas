@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls C:/Developer/maquinadevendas/maquina_vendas_mobile/app/\\\\\\(gestor\\\\\\)/perfil/metas C:/Developer/maquinadevendas/maquina_vendas_mobile/app/\\\\\\(admin\\\\\\))",
+      "Bash(ls app/\\\\\\(admin\\\\\\)/profile app/\\\\\\(vendedor\\\\\\)/perfil)",
+      "Bash(ls app/\\\\\\(auth\\\\\\))",
+      "Bash(perl --version)",
+      "Bash(xargs -0 grep -lE \"bg-\\\\[#0A0A0A\\\\]|bg-black[^/a-zA-Z0-9]|bg-\\\\[#111111\\\\]|bg-\\\\[#1[Aa]1[Aa]1[Aa]\\\\]|bg-\\\\[#262626\\\\]|border-\\\\[#2D2D2D\\\\]|text-\\\\[#D1D5DB\\\\]|text-\\\\[#9CA3AF\\\\]|text-\\\\[#6B7280\\\\]\")",
+      "Bash(xargs -0 perl -i -pe ':*)",
+      "Bash(npx tsc:*)",
+      "Bash(grep -n \"\"\"version\"\"\" app.json)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r \"ThemeContext\\\\|useTheme\" app components --include=*.tsx --include=*.ts)"
+    ]
+  }
+}

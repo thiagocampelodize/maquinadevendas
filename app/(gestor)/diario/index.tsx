@@ -475,50 +475,50 @@ export default function GestorDiaryPage() {
 
   if (!companyId) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8">
         <Text className="mb-2 text-xl font-bold text-white">Diario indisponivel</Text>
-        <Text className="text-center text-[#9CA3AF]">Sua conta não tem empresa vinculada.</Text>
+        <Text className="text-center text-text-muted">Sua conta não tem empresa vinculada.</Text>
       </SafeAreaView>
     );
   }
 
   if (loading && !refreshing) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black" edges={['left', 'right']}>
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['left', 'right']}>
         <ActivityIndicator size="large" color="#FF6B35" />
-        <Text className="mt-2 text-sm text-[#9CA3AF]">Carregando dados do diário...</Text>
+        <Text className="mt-2 text-sm text-text-muted">Carregando dados do diário...</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />}
       >
-        <Animated.View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5" style={sectionOneStyle}>
+        <Animated.View className="rounded-2xl border border-border bg-surface p-5" style={sectionOneStyle}>
           <View className="flex-row items-center gap-2">
             <CalendarDays size={22} color="#FF6B35" />
             <Text className="flex-1 text-[30px] font-semibold text-white">Calendário com métricas diárias</Text>
           </View>
         </Animated.View>
 
-        <Animated.View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4" style={sectionTwoStyle}>
+        <Animated.View className="rounded-2xl border border-border bg-surface p-4" style={sectionTwoStyle}>
           <Text className="mb-3 text-sm text-[#A3A3A3]">Visualização:</Text>
           <View className="gap-2">
             <Pressable
-              className={`rounded-xl px-3 py-3 ${viewFilter === 'all' ? 'bg-[#FF6B35]' : 'bg-[#262626]'}`}
+              className={`rounded-xl px-3 py-3 ${viewFilter === 'all' ? 'bg-[#FF6B35]' : 'bg-card-elevated'}`}
               onPress={() => setViewFilter('all')}
             >
-              <Text className={`font-semibold ${viewFilter === 'all' ? 'text-white' : 'text-[#D1D5DB]'}`}>📊 Todos os Vendedores</Text>
+              <Text className={`font-semibold ${viewFilter === 'all' ? 'text-white' : 'text-text-secondary'}`}>📊 Todos os Vendedores</Text>
             </Pressable>
             <Pressable
-              className={`rounded-xl px-3 py-3 ${viewFilter === 'mine' ? 'bg-[#FF6B35]' : 'bg-[#262626]'}`}
+              className={`rounded-xl px-3 py-3 ${viewFilter === 'mine' ? 'bg-[#FF6B35]' : 'bg-card-elevated'}`}
               onPress={() => setViewFilter((current) => (current === 'mine' ? 'all' : 'mine'))}
             >
-              <Text className={`font-semibold ${viewFilter === 'mine' ? 'text-white' : 'text-[#D1D5DB]'}`}>👑 Apenas meus registros</Text>
+              <Text className={`font-semibold ${viewFilter === 'mine' ? 'text-white' : 'text-text-secondary'}`}>👑 Apenas meus registros</Text>
             </Pressable>
           </View>
 
@@ -536,7 +536,7 @@ export default function GestorDiaryPage() {
           />
         </Animated.View>
 
-        <Animated.View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4" style={sectionThreeStyle}>
+        <Animated.View className="rounded-2xl border border-border bg-surface p-4" style={sectionThreeStyle}>
           <View className="mb-2 flex-row items-center gap-2">
             <ClipboardList size={18} color="#FACC15" />
             <Text className="flex-1 text-xl font-semibold text-white">Histórico de Observações do Mês</Text>
@@ -564,17 +564,17 @@ export default function GestorDiaryPage() {
           <View className="mt-3 gap-2">
             {loading ? <ActivityIndicator color="#FF6B35" /> : null}
             {!loading && filteredObservations.length === 0 ? (
-              <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
-                <Text className="text-center text-sm text-[#9CA3AF]">Nenhum registro encontrado com os filtros atuais.</Text>
+              <View className="rounded-xl border border-border bg-card p-4">
+                <Text className="text-center text-sm text-text-muted">Nenhum registro encontrado com os filtros atuais.</Text>
               </View>
             ) : null}
             {!loading
               ? filteredObservations.slice(0, 6).map((obs) => (
                   <View key={obs.id} className="rounded-xl border border-[#2F4A75] bg-[#1A2942] p-3">
-                    <Text className="text-sm text-[#D1D5DB]" numberOfLines={1}>
+                    <Text className="text-sm text-text-secondary" numberOfLines={1}>
                       {new Date(`${obs.date}T00:00:00`).toLocaleDateString('pt-BR')} • {obs.sellerName}
                     </Text>
-                    <Text className="text-xs text-[#9CA3AF]" numberOfLines={1}>
+                    <Text className="text-xs text-text-muted" numberOfLines={1}>
                       Por {obs.authorName} em {new Date(obs.createdAt).toLocaleString('pt-BR')}
                     </Text>
                     <View className="mt-2 self-start rounded-full border border-[#FF6B35] px-2 py-1">
@@ -587,7 +587,7 @@ export default function GestorDiaryPage() {
           </View>
         </Animated.View>
 
-        <Animated.View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4" style={sectionFourStyle}>
+        <Animated.View className="rounded-2xl border border-border bg-surface p-4" style={sectionFourStyle}>
           <View className="mb-3 flex-row items-center gap-2">
             <Text className="text-2xl text-white">📊</Text>
             <Text className="text-xl font-semibold text-white">Resumo do Mês</Text>
@@ -623,7 +623,7 @@ export default function GestorDiaryPage() {
           +  Registrar novo dia
         </Button>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <View className="mb-4 flex-row items-center justify-between">
             <Pressable onPress={() => setMonthDate(new Date(year, monthIndex - 1, 1))}>
               <ChevronLeft color="#D1D5DB" size={20} />
@@ -648,7 +648,7 @@ export default function GestorDiaryPage() {
 
           <View className="mb-2 flex-row justify-between px-1">
             {weekLabels.map((label) => (
-              <Text key={label} className="w-[13%] text-center text-sm text-[#D1D5DB]">
+              <Text key={label} className="w-[13%] text-center text-sm text-text-secondary">
                 {label}
               </Text>
             ))}
@@ -685,7 +685,7 @@ export default function GestorDiaryPage() {
                     onPress={() => onCalendarPressDay(day)}
                     className={`h-[104px] overflow-hidden rounded-lg border px-1.5 py-1.5 ${dayCardClass}`}
                   >
-                    <Text className="text-base text-[#D1D5DB]">{day}</Text>
+                    <Text className="text-base text-text-secondary">{day}</Text>
 
                     <View className="flex-1 items-center justify-center">
                       {metric.totalSales > 0 ? (
@@ -713,7 +713,7 @@ export default function GestorDiaryPage() {
             })}
           </View>
 
-          <Text className="mt-3 text-center text-sm text-[#6B7280]">ℹ️ Toque em um dia para ver os detalhes completos</Text>
+          <Text className="mt-3 text-center text-sm text-text-faint">ℹ️ Toque em um dia para ver os detalhes completos</Text>
         </View>
 
       </ScrollView>
@@ -829,7 +829,7 @@ function RegisterDayModal({
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
           className="flex-1 rounded-t-2xl border border-[#3A3F47] bg-[#16181C]"
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">Registrar informações comerciais do dia</Text>
             <Pressable onPress={onClose}>
               <X size={20} color="#9CA3AF" />
@@ -837,15 +837,15 @@ function RegisterDayModal({
           </View>
 
           <ScrollView className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 20 }}>
-            <Text className="text-sm text-[#9CA3AF]">Por {currentUserName} 👑</Text>
+            <Text className="text-sm text-text-muted">Por {currentUserName} 👑</Text>
 
-            <Text className="text-sm text-[#D1D5DB]">Data</Text>
+            <Text className="text-sm text-text-secondary">Data</Text>
             <View className="flex-row items-center gap-2">
               <Pressable onPress={() => moveDay(-1)} className="rounded-lg bg-[#111827] p-2">
                 <ChevronLeft size={18} color="#D1D5DB" />
               </Pressable>
               <View className="flex-1 rounded-xl bg-[#1D2B44] p-3">
-                <Text className="text-xs text-[#9CA3AF]">{dayOfWeek}</Text>
+                <Text className="text-xs text-text-muted">{dayOfWeek}</Text>
                 <Text className="text-xl text-white">{dayOfWeek}</Text>
               </View>
               <Pressable onPress={() => moveDay(1)} className="rounded-lg bg-[#111827] p-2">
@@ -855,11 +855,11 @@ function RegisterDayModal({
 
             <View className="flex-row gap-2">
               <View className="flex-1 rounded-xl bg-[#3B4B64] p-3">
-                <Text className="text-sm text-[#D1D5DB]">💰 Vendido (modulo Vendas)</Text>
+                <Text className="text-sm text-text-secondary">💰 Vendido (modulo Vendas)</Text>
                 <Text className="mt-1 text-2xl text-white">R$ {soldValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
               </View>
               <View className="flex-1 rounded-xl bg-[#3B4B64] p-3">
-                <Text className="text-sm text-[#D1D5DB]">🎯 Meta do Dia (calculado)</Text>
+                <Text className="text-sm text-text-secondary">🎯 Meta do Dia (calculado)</Text>
                 <Text className="mt-1 text-2xl text-white">R$ {dailyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
               </View>
             </View>
@@ -875,7 +875,7 @@ function RegisterDayModal({
               </View>
             </View>
 
-            <Text className="text-sm text-[#D1D5DB]">Como foi o dia?</Text>
+            <Text className="text-sm text-text-secondary">Como foi o dia?</Text>
             <View className="flex-row gap-2">
               {([
                 { value: 'great', label: '😁\nOtimo' },
@@ -893,7 +893,7 @@ function RegisterDayModal({
               ))}
             </View>
 
-            <Text className="text-sm text-[#D1D5DB]">📝 Anotações do Dia</Text>
+            <Text className="text-sm text-text-secondary">📝 Anotações do Dia</Text>
             <TextInput
               value={notes}
               onChangeText={onChangeNotes}
@@ -904,8 +904,8 @@ function RegisterDayModal({
               className="min-h-[120px] rounded-xl border border-[#3B4B64] bg-[#1D2B44] p-3 text-white"
             />
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-[#9CA3AF]">💡 Você pode registrar notas mesmo em dias sem vendas</Text>
-              <Text className="text-xs text-[#9CA3AF]">{notes.length}/400</Text>
+              <Text className="text-xs text-text-muted">💡 Você pode registrar notas mesmo em dias sem vendas</Text>
+              <Text className="text-xs text-text-muted">{notes.length}/400</Text>
             </View>
           </ScrollView>
 
@@ -976,7 +976,7 @@ function DayRecordsListModal({
               <Text className="mt-1 text-3xl text-white">
                 {entries.length} {entries.length === 1 ? 'registro' : 'registros'} neste dia
               </Text>
-              <Text className="mt-1 text-sm text-[#D1D5DB]">
+              <Text className="mt-1 text-sm text-text-secondary">
                 Total do dia: <Text className="text-[#FF6B35]">R$ {totalDay.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
               </Text>
               <Text className={`text-sm ${totalDay >= dailyGoal && dailyGoal > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -991,7 +991,7 @@ function DayRecordsListModal({
           <View className="gap-2">
             {entries.length === 0 ? (
               <View className="rounded-xl border border-[#4B5563] bg-[#334155] p-3">
-                <Text className="text-center text-sm text-[#D1D5DB]">Nenhum registro encontrado nesta data.</Text>
+                <Text className="text-center text-sm text-text-secondary">Nenhum registro encontrado nesta data.</Text>
               </View>
             ) : null}
             {entries.map((record) => {
@@ -1075,7 +1075,7 @@ function DayRecordDetailModal({
               <Text className="text-sm text-[#A3A3A3]">
                 {new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">Por</Text>
+              <Text className="mt-1 text-sm text-text-muted">Por</Text>
               <Text className="text-xl font-semibold text-white">{sellerName}</Text>
             </View>
             <Pressable onPress={onClose}>
@@ -1102,7 +1102,7 @@ function DayRecordDetailModal({
               <View className="rounded-xl border border-[#55657D] bg-[#32435C] p-3">
                 <Text className="text-sm uppercase tracking-[1.5px] text-[#A3A3A3]">Total Vendido no Dia</Text>
                 <Text className="mt-2 text-3xl font-semibold text-[#FF6B35]">R$ {dayTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
-                <Text className="text-xs text-[#9CA3AF]">Consolidado de todos os registros do dia</Text>
+                <Text className="text-xs text-text-muted">Consolidado de todos os registros do dia</Text>
               </View>
             </View>
 
@@ -1111,8 +1111,8 @@ function DayRecordDetailModal({
                 <MessageCircle size={16} color="#E5E7EB" />
                 <Text className="text-2xl text-white">Observações por Vendedor</Text>
               </View>
-              <Text className="text-sm text-[#9CA3AF]">Delegue e registre observacoes diretamente neste dia.</Text>
-              <Text className="mt-2 text-sm text-[#9CA3AF]">Observação para</Text>
+              <Text className="text-sm text-text-muted">Delegue e registre observacoes diretamente neste dia.</Text>
+              <Text className="mt-2 text-sm text-text-muted">Observação para</Text>
               <View className="mt-1 flex-row items-center justify-between">
                 <Text className="text-xl font-semibold text-white">{sellerName}</Text>
                 {sellerOptions.length > 1 ? (
@@ -1124,7 +1124,7 @@ function DayRecordDetailModal({
                     }}
                     className="rounded-lg border border-[#4B5563] bg-[#3C4B63] px-3 py-1.5"
                   >
-                    <Text className="text-sm text-[#D1D5DB]">Trocar</Text>
+                    <Text className="text-sm text-text-secondary">Trocar</Text>
                   </Pressable>
                 ) : null}
               </View>
@@ -1138,19 +1138,19 @@ function DayRecordDetailModal({
                 className="mt-2 min-h-[96px] rounded-xl border border-[#55657D] bg-[#3C4B63] p-3 text-white"
               />
 
-              <Text className="mb-2 mt-3 text-sm text-[#9CA3AF]">Tipo de registro</Text>
+              <Text className="mb-2 mt-3 text-sm text-text-muted">Tipo de registro</Text>
               <View className="flex-row gap-2">
                 <Pressable
                   onPress={() => onChangeType('observation')}
                   className={`flex-1 rounded-xl border px-3 py-2 ${noteType === 'observation' ? 'border-[#FF6B35] bg-[#FF6B35]' : 'border-[#55657D] bg-[#32435C]'}`}
                 >
-                  <Text className={`text-center font-semibold ${noteType === 'observation' ? 'text-white' : 'text-[#D1D5DB]'}`}>📝 Observação</Text>
+                  <Text className={`text-center font-semibold ${noteType === 'observation' ? 'text-white' : 'text-text-secondary'}`}>📝 Observação</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => onChangeType('feedback')}
                   className={`flex-1 rounded-xl border px-3 py-2 ${noteType === 'feedback' ? 'border-[#2563EB] bg-[#2563EB]' : 'border-[#55657D] bg-[#32435C]'}`}
                 >
-                  <Text className={`text-center font-semibold ${noteType === 'feedback' ? 'text-white' : 'text-[#D1D5DB]'}`}>💬 Feedback</Text>
+                  <Text className={`text-center font-semibold ${noteType === 'feedback' ? 'text-white' : 'text-text-secondary'}`}>💬 Feedback</Text>
                 </Pressable>
               </View>
 
@@ -1170,7 +1170,7 @@ function DayRecordDetailModal({
                 {observations.map((item) => (
                   <View key={item.id} className="rounded-xl border border-[#55657D] bg-[#3C4B63] p-3">
                     <View className="flex-row items-center justify-between">
-                      <Text className="text-xs text-[#9CA3AF]">
+                      <Text className="text-xs text-text-muted">
                         {item.authorName} • {new Date(item.createdAt).toLocaleString('pt-BR')}
                       </Text>
                       <View className={`rounded-full px-2 py-0.5 ${item.type === 'feedback' ? 'bg-[#1D4ED8]' : 'bg-[#5A2A12]'}`}>
@@ -1180,7 +1180,7 @@ function DayRecordDetailModal({
                     <Text className="mt-2 text-base text-white">{item.text}</Text>
                   </View>
                 ))}
-                {observations.length === 0 ? <Text className="text-sm text-[#9CA3AF]">Nenhum registro para este vendedor nesta data.</Text> : null}
+                {observations.length === 0 ? <Text className="text-sm text-text-muted">Nenhum registro para este vendedor nesta data.</Text> : null}
               </View>
             </View>
 
@@ -1190,7 +1190,7 @@ function DayRecordDetailModal({
               <View className="mt-2 h-2 rounded-full bg-[#4B5563]">
                 <View className="h-2 rounded-full bg-[#FF6B35]" style={{ width: `${Math.min(100, performance)}%` }} />
               </View>
-              <Text className="mt-2 text-xs text-[#9CA3AF]">
+              <Text className="mt-2 text-xs text-text-muted">
                 Vendedor: R$ {sellerDaySales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </Text>
             </View>
@@ -1214,10 +1214,10 @@ function SummaryCard({
 }) {
   const className =
     tone === 'good'
-      ? 'border-[#2D2D2D] bg-[#1A1A1A]'
+      ? 'border-border bg-card'
       : tone === 'bad'
         ? 'border-[#F43F5E] bg-[#3A0F16]'
-        : 'border-[#2D2D2D] bg-[#1A1A1A]';
+        : 'border-border bg-card';
   const valueColor = tone === 'warn' ? 'text-[#FACC15]' : 'text-white';
   const valueSizeClass = value.length > 12 ? 'text-xl' : value.length > 8 ? 'text-3xl' : 'text-4xl';
 
@@ -1230,7 +1230,7 @@ function SummaryCard({
         {value}
       </Text>
       {subtitle ? (
-        <Text className="text-xs text-[#9CA3AF]" numberOfLines={1}>
+        <Text className="text-xs text-text-muted" numberOfLines={1}>
           {subtitle}
         </Text>
       ) : null}
@@ -1242,7 +1242,7 @@ function LegendItem({ color, label }: { color: string; label: string }) {
   return (
     <View className="flex-row items-center gap-1">
       <View className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-      <Text className="text-sm text-[#9CA3AF]">{label}</Text>
+      <Text className="text-sm text-text-muted">{label}</Text>
     </View>
   );
 }

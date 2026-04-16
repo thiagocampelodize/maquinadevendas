@@ -5,7 +5,7 @@ import { GestorSales } from '@/components/sales/GestorSales';
 
 export default function GestorSalesPage() {
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ErrorBoundary>
         <GestorSales />
       </ErrorBoundary>

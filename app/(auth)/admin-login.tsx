@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -8,12 +9,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/Button';
@@ -21,6 +22,8 @@ import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
 import { markFirstScreenRendered } from '@/lib/bootstrap-diagnostics';
+
+const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Informe seu usuário ou e-mail'),
@@ -64,7 +67,7 @@ export default function AdminLoginScreen() {
   const shouldScroll = contentHeight > 0 && viewportHeight > 0 && contentHeight > viewportHeight;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0A0A0A]">
+    <SafeAreaView className="flex-1 bg-background" style={{ backgroundColor: '#0A0A0A' }}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -90,7 +93,7 @@ export default function AdminLoginScreen() {
 
           {/* Card */}
           <View
-            className="overflow-hidden rounded-2xl border border-[#FF6B35]/40 bg-[#111111]"
+            className="overflow-hidden rounded-2xl border border-[#FF6B35]/40 bg-surface"
             style={{ maxWidth: 420, width: '100%', alignSelf: 'center' }}
           >
             {/* Header laranja */}
@@ -106,7 +109,7 @@ export default function AdminLoginScreen() {
             <View className="gap-4 p-6">
               <View>
                 <Text className="text-xl font-bold text-white">Acesso Administrativo</Text>
-                <Text className="mt-1 text-sm text-[#9CA3AF]">Faça login com suas credenciais de administrador</Text>
+                <Text className="mt-1 text-sm text-text-muted">Faça login com suas credenciais de administrador</Text>
               </View>
 
               <View>
@@ -127,12 +130,12 @@ export default function AdminLoginScreen() {
               </View>
 
               <View>
-                <Text className="mb-2 text-sm text-[#9CA3AF]">Senha</Text>
+                <Text className="mb-2 text-sm text-text-muted">Senha</Text>
                 <Controller
                   control={control}
                   name="password"
                   render={({ field: { value, onChange } }) => (
-                    <View className="h-12 flex-row items-center rounded-xl border border-[#2D2D2D] bg-[#111111] px-4">
+                    <View className="h-12 flex-row items-center rounded-xl border border-border bg-surface px-4">
                       <TextInput
                         value={value}
                         onChangeText={onChange}
@@ -164,13 +167,15 @@ export default function AdminLoginScreen() {
             </View>
 
             {/* Footer */}
-            <View className="border-t border-[#2D2D2D] bg-[#0A0A0A] px-6 py-4">
-              <Text className="text-center text-xs text-[#6B7280]">🔒 Ambiente seguro e protegido</Text>
+            <View className="border-t border-border bg-background px-6 py-4">
+              <Text className="text-center text-xs text-text-faint">🔒 Ambiente seguro e protegido</Text>
               <Text className="mt-1 text-center text-xs text-[#4B5563]">
                 © {new Date().getFullYear()} Máquina de Vendas - Todos os direitos reservados
               </Text>
             </View>
           </View>
+
+          <Text className="mt-6 text-center text-xs text-text-faint">versão {APP_VERSION}</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

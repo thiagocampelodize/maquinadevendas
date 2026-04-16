@@ -30,7 +30,7 @@ export function ChecklistTabs({ activePeriod, setActivePeriod }: ChecklistTabsPr
             key={tab.id}
             onPress={() => setActivePeriod(tab.id)}
             className={`min-w-[47%] flex-1 flex-row items-center justify-center gap-2 rounded-xl border px-3 py-3 ${
-              isActive ? 'border-[#FF6B35] bg-[#FF6B35]' : 'border-[#404040] bg-[#1a1a1a]'
+              isActive ? 'border-[#FF6B35] bg-[#FF6B35]' : 'border-[#404040] bg-card'
             }`}
           >
             <Icon stroke={isActive ? '#FFFFFF' : '#a3a3a3'} size={16} />

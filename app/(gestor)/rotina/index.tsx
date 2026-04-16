@@ -194,11 +194,11 @@ export default function GestorChecklistPage() {
 
   if (!user?.company_id) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8">
         <Text className="mb-2 text-xl font-bold text-white">
           Rotina Indisponivel
         </Text>
-        <Text className="text-center text-[#9CA3AF]">
+        <Text className="text-center text-text-muted">
           Sua conta nao tem uma empresa vinculada. E necessario ter uma empresa
           para gerar a rotina diaria.
         </Text>
@@ -207,7 +207,7 @@ export default function GestorChecklistPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={["left", "right"]}>
+    <SafeAreaView className="flex-1 bg-background" edges={["left", "right"]}>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 0 }}
@@ -237,7 +237,7 @@ export default function GestorChecklistPage() {
         </Animated.View>
 
         {isLoading ? (
-          <Text className="text-center text-[#9CA3AF]">
+          <Text className="text-center text-text-muted">
             Carregando tarefas...
           </Text>
         ) : null}
@@ -328,7 +328,7 @@ export default function GestorChecklistPage() {
             style={completionBackdropStyle}
           >
             <Animated.View
-              className="w-full rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5"
+              className="w-full rounded-2xl border border-border bg-surface p-5"
               style={completionContentStyle}
             >
               <View className="mb-4 flex-row items-center gap-2">
@@ -374,7 +374,7 @@ export default function GestorChecklistPage() {
             style={taskDetailsBackdropStyle}
           >
             <Animated.View
-              className="w-full rounded-2xl border border-[#2D2D2D] bg-[#111111] p-5"
+              className="w-full rounded-2xl border border-border bg-surface p-5"
               style={taskDetailsContentStyle}
             >
               <View className="mb-4 flex-row items-center justify-between">

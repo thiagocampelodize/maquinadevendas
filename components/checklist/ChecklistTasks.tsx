@@ -27,7 +27,7 @@ export function ChecklistTasks({
 
   return (
     <View className="gap-4">
-      <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-4">
+      <View className="rounded-xl border border-[#404040] bg-card p-4">
         <SectionBadge
           title={userRole === 'VENDEDOR' ? '📋 TAREFAS FIXAS' : '📘 METODO OMC'}
           subtitle="Tarefas fixas da metodologia"
@@ -51,7 +51,7 @@ export function ChecklistTasks({
       </View>
 
       {specificTasks.length > 0 ? (
-        <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-4">
+        <View className="rounded-xl border border-[#404040] bg-card p-4">
           <View className="flex-row items-center justify-between">
             <SectionBadge title="🎯 TAREFAS ESPECIFICAS" subtitle="Atribuidas para equipe" />
             {isManager && onShowSpecificTasksModal ? (
@@ -72,7 +72,7 @@ export function ChecklistTasks({
       {isManager && onShowSpecificTasksModal && specificTasks.length === 0 ? (
         <Pressable
           onPress={onShowSpecificTasksModal}
-          className="items-center rounded-xl border-2 border-dashed border-[#404040] bg-[#1a1a1a] p-5"
+          className="items-center rounded-xl border-2 border-dashed border-[#404040] bg-card p-5"
         >
           <View className="mb-2 flex-row items-center gap-2">
             <Plus stroke="#a3a3a3" size={16} />
@@ -110,7 +110,7 @@ function TaskCard({
   return (
     <View
       className={`rounded-xl border p-4 ${
-        task.completed ? 'border-green-500 bg-green-900/10' : 'border-[#404040] bg-[#1a1a1a]'
+        task.completed ? 'border-green-500 bg-green-900/10' : 'border-[#404040] bg-card'
       }`}
     >
       <View className="flex-row gap-3">
@@ -155,7 +155,7 @@ function TaskCard({
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-4">
+    <View className="rounded-xl border border-[#404040] bg-card p-4">
       <Text className="text-sm text-[#a3a3a3]">{text}</Text>
     </View>
   );

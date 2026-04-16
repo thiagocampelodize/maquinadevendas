@@ -179,7 +179,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <FlatList
         data={loading ? [] : filtered}
         keyExtractor={(item) => item.id}
@@ -190,11 +190,11 @@ export default function UsersManagementPage() {
         contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
         ListHeaderComponent={
           <View className="gap-4">
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <View className="flex-row items-center justify-between gap-3">
                 <View className="flex-1">
                   <Text className="text-xl font-semibold text-white">Gerenciar Usuários</Text>
-                  <Text className="mt-1 text-sm text-[#9CA3AF]">Controle de perfis administrativos, gestores e vendedores.</Text>
+                  <Text className="mt-1 text-sm text-text-muted">Controle de perfis administrativos, gestores e vendedores.</Text>
                 </View>
                 <Pressable className="h-10 flex-row items-center gap-2 rounded-xl bg-[#FF6B35] px-3" onPress={openNewModal}>
                   <UserPlus size={14} color="#FFFFFF" />
@@ -210,7 +210,7 @@ export default function UsersManagementPage() {
               <AdminStatCard title="Vendedor" value={`${users.filter((item) => item.role === 'VENDEDOR').length}`} icon={User2} tone="green" />
             </View>
 
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <Text className="mb-3 text-base font-semibold text-white">Filtros</Text>
               <View className="gap-3">
                 <Select
@@ -226,8 +226,8 @@ export default function UsersManagementPage() {
                   options={['Todos', 'Ativo', 'Inativo'].map((value) => ({ label: value, value }))}
                 />
                 <View>
-                  <Text className="mb-2 text-sm text-[#D1D5DB]">Buscar</Text>
-                  <View className="h-12 flex-row items-center rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3">
+                  <Text className="mb-2 text-sm text-text-secondary">Buscar</Text>
+                  <View className="h-12 flex-row items-center rounded-lg border border-border bg-card px-3">
                     <Search size={16} color="#6B7280" />
                     <TextInput
                       className="ml-2 flex-1 text-white"
@@ -241,34 +241,34 @@ export default function UsersManagementPage() {
               </View>
             </View>
 
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <Text className="text-base font-semibold text-white">Usuários</Text>
-              <Text className="mt-1 text-xs text-[#6B7280]">{filtered.length} registro(s) encontrado(s).</Text>
+              <Text className="mt-1 text-xs text-text-faint">{filtered.length} registro(s) encontrado(s).</Text>
             </View>
           </View>
         }
         ItemSeparatorComponent={() => <View className="h-2" />}
         renderItem={({ item: user }) => (
-          <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+          <View className="rounded-xl border border-border bg-card p-3">
             <View className="flex-row items-center gap-3">
               <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF6B35]">
                 <Text className="text-xs font-bold text-white">{initialsFromName(user.name)}</Text>
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-white">{user.name}</Text>
-                <Text className="text-xs text-[#9CA3AF]">{user.email}</Text>
+                <Text className="text-xs text-text-muted">{user.email}</Text>
               </View>
             </View>
 
             <View className="mt-3 flex-row items-center justify-between gap-2">
-              <Text className="flex-1 text-xs text-[#9CA3AF]">{user.company}</Text>
+              <Text className="flex-1 text-xs text-text-muted">{user.company}</Text>
               <Text className="text-xs font-semibold text-[#FF6B35]">{roleLabel(user.role)}</Text>
-              <Text className={`text-xs font-semibold ${user.status === 'Ativo' ? 'text-[#34D399]' : 'text-[#9CA3AF]'}`}>{user.status}</Text>
+              <Text className={`text-xs font-semibold ${user.status === 'Ativo' ? 'text-[#34D399]' : 'text-text-muted'}`}>{user.status}</Text>
             </View>
 
             <View className="mt-3 flex-row gap-2">
-              <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-[#2D2D2D] bg-[#111111]" onPress={() => openEditModal(user)}>
-                <Text className="text-xs font-semibold text-[#D1D5DB]">Editar</Text>
+              <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-border bg-surface" onPress={() => openEditModal(user)}>
+                <Text className="text-xs font-semibold text-text-secondary">Editar</Text>
               </Pressable>
               <Pressable
                 className={`h-9 flex-1 items-center justify-center rounded-lg border ${user.status === 'Ativo' ? 'border-red-900 bg-[#2A0F0F]' : 'border-green-900 bg-[#0F2A16]'}`}
@@ -291,11 +291,11 @@ export default function UsersManagementPage() {
           loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
-              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando usuários...</Text>
+              <Text className="mt-2 text-center text-sm text-text-muted">Carregando usuários...</Text>
             </View>
           ) : (
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#111111] p-4">
-              <Text className="text-center text-sm text-[#9CA3AF]">Nenhum usuário encontrado para os filtros.</Text>
+            <View className="rounded-xl border border-border bg-surface p-4">
+              <Text className="text-center text-sm text-text-muted">Nenhum usuário encontrado para os filtros.</Text>
             </View>
           )
         }
@@ -306,7 +306,7 @@ export default function UsersManagementPage() {
           <Animated.View style={animatedBackdropStyle} className="flex-1 bg-black/80">
             <Animated.View
               style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
-              className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111] p-4"
+              className="flex-1 rounded-t-2xl border border-border bg-surface p-4"
             >
               <Text className="text-lg font-semibold text-white">{editingUser ? 'Editar usuário' : 'Novo usuário'}</Text>
 
@@ -317,7 +317,7 @@ export default function UsersManagementPage() {
                     onChangeText={setName}
                     placeholder="Nome completo"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -329,7 +329,7 @@ export default function UsersManagementPage() {
                     autoCapitalize="none"
                     placeholder="email@dominio.com"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -376,7 +376,7 @@ export default function UsersManagementPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View>
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       {children}
     </View>
   );

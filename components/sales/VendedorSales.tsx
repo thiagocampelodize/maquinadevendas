@@ -151,27 +151,27 @@ export function VendedorSales() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator color="#FF6B35" size="large" />
-        <Text className="mt-2 text-sm text-[#9CA3AF]">Carregando suas vendas...</Text>
+        <Text className="mt-2 text-sm text-text-muted">Carregando suas vendas...</Text>
       </View>
     );
   }
 
   return (
     <ScrollView
-      className="flex-1 bg-black"
+      className="flex-1 bg-background"
       contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />}
     >
       {!companyId ? (
-        <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-6">
+        <View className="rounded-xl border border-[#404040] bg-card p-6">
           <Text className="text-center text-lg text-white">Empresa não vinculada</Text>
-          <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Entre em contato com o administrador.</Text>
+          <Text className="mt-2 text-center text-sm text-text-muted">Entre em contato com o administrador.</Text>
         </View>
       ) : (
         <>
-          <Animated.View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-5" style={panelStyle}>
+          <Animated.View className="rounded-xl border border-[#404040] bg-card p-5" style={panelStyle}>
             <View className="mb-4 flex-row items-start justify-between gap-3">
               <View className="flex-1">
                 <Text className="text-2xl font-semibold text-white">💰 Minhas Vendas</Text>
@@ -190,14 +190,14 @@ export function VendedorSales() {
               Permitido lançar vendas de hoje e dos últimos {retroactiveDaysLimit} {retroactiveDaysLimit === 1 ? 'dia' : 'dias'}.
             </Text>
 
-            <View className="mt-4 rounded-xl border border-[#404040] bg-[#262626] p-4">
+            <View className="mt-4 rounded-xl border border-[#404040] bg-card-elevated p-4">
               <View className="mb-3 flex-row items-end justify-between">
                 <View>
-                  <Text className="text-xs text-[#9CA3AF]">Meta diária</Text>
+                  <Text className="text-xs text-text-muted">Meta diária</Text>
                   <Text className="text-xl font-bold text-white">{toBRL(dailyGoal)}</Text>
                 </View>
                 <View>
-                  <Text className="text-xs text-[#9CA3AF]">Realizado no dia</Text>
+                  <Text className="text-xs text-text-muted">Realizado no dia</Text>
                   <Text className="text-xl font-bold text-[#FF6B35]">{toBRL(dayTotal)}</Text>
                 </View>
               </View>
@@ -229,16 +229,16 @@ export function VendedorSales() {
             </Button>
           </Animated.View>
 
-          <Animated.View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-4" style={listStyle}>
+          <Animated.View className="rounded-xl border border-[#404040] bg-card p-4" style={listStyle}>
             <View className="mb-3 flex-row items-center gap-2">
               <BarChart3 stroke="#FF6B35" size={18} />
               <Text className="text-base text-white">Lançamentos do dia ({dayCount})</Text>
             </View>
 
             {sales.length === 0 ? (
-              <View className="items-center rounded-xl border border-[#404040] bg-[#262626] p-5">
+              <View className="items-center rounded-xl border border-[#404040] bg-card-elevated p-5">
                 <TrendingUp stroke="#6B7280" size={28} />
-                <Text className="mt-2 text-sm text-[#9CA3AF]">
+                <Text className="mt-2 text-sm text-text-muted">
                   {selectedDate === today ? 'Nenhuma venda registrada hoje' : 'Nenhuma venda registrada na data selecionada'}
                 </Text>
               </View>
@@ -253,18 +253,18 @@ export function VendedorSales() {
                 windowSize={5}
                 ItemSeparatorComponent={() => <View className="h-2" />}
                 renderItem={({ item: sale }) => (
-                  <View className="rounded-lg border border-[#404040] bg-[#262626] p-3">
+                  <View className="rounded-lg border border-[#404040] bg-card-elevated p-3">
                     <View className="flex-row items-start justify-between gap-2">
                       <View className="flex-1">
                         <Text className={`${sale.value < 0 ? 'text-red-500' : 'text-white'} text-base font-semibold`}>
                           {toBRL(sale.value)}
                         </Text>
-                        <Text className="text-xs text-[#9CA3AF]">
+                        <Text className="text-xs text-text-muted">
                           {new Date(sale.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • {shiftLabel(sale.period as Shift)}
                         </Text>
-                        {sale.client ? <Text className="mt-1 text-xs text-[#9CA3AF]">Cliente: {sale.client}</Text> : null}
-                        {sale.product ? <Text className="text-xs text-[#9CA3AF]">Produto: {sale.product}</Text> : null}
-                        {sale.notes ? <Text className="text-xs text-[#9CA3AF]">Obs: {sale.notes}</Text> : null}
+                        {sale.client ? <Text className="mt-1 text-xs text-text-muted">Cliente: {sale.client}</Text> : null}
+                        {sale.product ? <Text className="text-xs text-text-muted">Produto: {sale.product}</Text> : null}
+                        {sale.notes ? <Text className="text-xs text-text-muted">Obs: {sale.notes}</Text> : null}
                       </View>
                       <View className="flex-row gap-2">
                         <Pressable onPress={() => setEditingSale(sale)}>
@@ -413,10 +413,10 @@ function VendedorLaunchSaleModal({
     <Modal visible={shouldRender} transparent animationType="none" onRequestClose={onClose}>
       <Animated.View style={animatedBackdropStyle} className="flex-1 bg-black/80">
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">Lançar venda</Text>
             <Pressable onPress={onClose}>
               <X stroke="#FFFFFF" size={20} />
@@ -450,7 +450,7 @@ function VendedorLaunchSaleModal({
                 keyboardType="numeric"
                 placeholder="0,00"
                 placeholderTextColor="#6B7280"
-                className="h-12 rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                className="h-12 rounded-lg border border-border bg-card px-3 text-white"
               />
             </Field>
 
@@ -460,7 +460,7 @@ function VendedorLaunchSaleModal({
                 onChangeText={setClient}
                 placeholder="Nome do cliente"
                 placeholderTextColor="#6B7280"
-                className="h-12 rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                className="h-12 rounded-lg border border-border bg-card px-3 text-white"
               />
             </Field>
 
@@ -470,7 +470,7 @@ function VendedorLaunchSaleModal({
                 onChangeText={setProduct}
                 placeholder="Produto vendido"
                 placeholderTextColor="#6B7280"
-                className="h-12 rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                className="h-12 rounded-lg border border-border bg-card px-3 text-white"
               />
             </Field>
 
@@ -481,7 +481,7 @@ function VendedorLaunchSaleModal({
                 multiline
                 placeholder="Observações adicionais"
                 placeholderTextColor="#6B7280"
-                className="min-h-[100px] rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3 text-white"
+                className="min-h-[100px] rounded-lg border border-border bg-card px-3 py-3 text-white"
               />
             </Field>
 
@@ -507,7 +507,7 @@ function VendedorLaunchSaleModal({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View>
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       {children}
     </View>
   );
@@ -515,8 +515,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <View className="flex-1 rounded-lg bg-[#1A1A1A] px-2 py-2">
-      <Text className="text-[11px] text-[#9CA3AF]" numberOfLines={1}>
+    <View className="flex-1 rounded-lg bg-card px-2 py-2">
+      <Text className="text-[11px] text-text-muted" numberOfLines={1}>
         {label}
       </Text>
       <Text className="mt-1 text-xs font-semibold text-white" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>

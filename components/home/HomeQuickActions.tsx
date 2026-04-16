@@ -96,10 +96,10 @@ function ActionCard({
   return (
     <Card>
       <View className="mb-4 flex-row items-center gap-3">
-        <View className="rounded-lg bg-[#262626] p-2">{icon}</View>
+        <View className="rounded-lg bg-card-elevated p-2">{icon}</View>
         <Text className="text-lg font-semibold text-white">{title}</Text>
       </View>
-      <Text className="mb-4 text-sm text-[#9CA3AF]">{subtitle}</Text>
+      <Text className="mb-4 text-sm text-text-muted">{subtitle}</Text>
       <Button variant="outline" onPress={onPress} style={{ backgroundColor: buttonColor }}>
         {buttonText}
       </Button>

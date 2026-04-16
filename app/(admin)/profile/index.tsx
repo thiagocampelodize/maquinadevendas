@@ -8,19 +8,19 @@ export default function AdminProfilePage() {
   const { user, signOut } = useAuth();
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
 
         {/* Info do admin */}
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <View className="flex-row items-center gap-3">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-[#FF6B35]">
               <ShieldCheck size={22} color="#FFFFFF" />
             </View>
             <View className="flex-1">
               <Text className="text-base font-semibold text-white">{user?.name || 'Administrador'}</Text>
-              <Text className="text-sm text-[#9CA3AF]">{user?.email || '-'}</Text>
-              <Text className="mt-0.5 text-xs text-[#6B7280]">Super Admin</Text>
+              <Text className="text-sm text-text-muted">{user?.email || '-'}</Text>
+              <Text className="mt-0.5 text-xs text-text-faint">Super Admin</Text>
             </View>
           </View>
         </View>

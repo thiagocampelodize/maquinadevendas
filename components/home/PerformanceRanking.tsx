@@ -84,7 +84,7 @@ export function PerformanceRanking({
     return (
       <View
         key={seller.id}
-        className={`rounded-xl border ${isTop ? topBorderClass : "border-red-600/50 bg-[#1a1a1a]"} ${isTop && index === 0 ? "p-4" : "p-3"}`}
+        className={`rounded-xl border ${isTop ? topBorderClass : "border-red-600/50 bg-card"} ${isTop && index === 0 ? "p-4" : "p-3"}`}
       >
         <View className="mb-3 flex-row items-center gap-3">
           <View
@@ -93,7 +93,7 @@ export function PerformanceRanking({
                 ? index === 0
                   ? "bg-[#FACC15]"
                   : "bg-green-500/15"
-                : "bg-[#262626]"
+                : "bg-card-elevated"
             }`}
           >
             <Text
@@ -102,7 +102,7 @@ export function PerformanceRanking({
                   ? index === 0
                     ? "text-black"
                     : "text-green-300"
-                  : "text-[#9CA3AF]"
+                  : "text-text-muted"
               }`}
             >
               {isTop
@@ -175,7 +175,7 @@ export function PerformanceRanking({
           {showMessageAction ? (
             <Pressable
               onPress={() => onOpenMessage?.(seller)}
-              className="rounded-md bg-[#262626] p-2"
+              className="rounded-md bg-card-elevated p-2"
             >
               <MessageSquare stroke="#9CA3AF" size={14} />
             </Pressable>
@@ -221,7 +221,7 @@ export function PerformanceRanking({
 
   return (
     <Card style={{ padding: 0, overflow: "hidden" }}>
-      <View className="border-b border-[#404040] bg-[#262626] p-4">
+      <View className="border-b border-[#404040] bg-card-elevated p-4">
         <Text className="text-lg font-semibold text-white">
           Ranking de Performance
         </Text>
@@ -295,8 +295,8 @@ function MetricMini({
   valueColor?: string;
 }) {
   return (
-    <View className="min-w-[95px] rounded-md bg-[#262626] p-2">
-      <Text className="text-xs text-[#9CA3AF]">{label}</Text>
+    <View className="min-w-[95px] rounded-md bg-card-elevated p-2">
+      <Text className="text-xs text-text-muted">{label}</Text>
       <Text
         className="text-sm font-semibold"
         style={{ color: valueColor || "#FFFFFF" }}

@@ -159,10 +159,10 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
     <Modal visible={shouldRender} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">Mensagem para {seller.name}</Text>
             <Pressable onPress={onClose}>
               <X stroke="#FFFFFF" size={20} />
@@ -170,7 +170,7 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
           </View>
 
           <ScrollView className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-            {isLoading ? <Text className="text-[#9CA3AF]">Carregando templates...</Text> : null}
+            {isLoading ? <Text className="text-text-muted">Carregando templates...</Text> : null}
 
             {!isLoading ? (
               <>
@@ -200,12 +200,12 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
 
                 {!selectedTemplate ? (
                   <View>
-                    <Text className="mb-2 text-sm text-[#D1D5DB]">Mensagem Personalizada</Text>
+                    <Text className="mb-2 text-sm text-text-secondary">Mensagem Personalizada</Text>
                     <TextInput
                       multiline
                       value={customMessage}
                       onChangeText={setCustomMessage}
-                      className="min-h-[120px] rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] p-3 text-white"
+                      className="min-h-[120px] rounded-lg border border-border bg-card p-3 text-white"
                       placeholder="Digite sua mensagem..."
                       placeholderTextColor="#6B7280"
                     />
@@ -214,19 +214,19 @@ export function SendMessageModal({ isOpen, onClose, seller, companyId }: SendMes
 
                 <View>
                   <View className="mb-2 flex-row items-center justify-between">
-                    <Text className="text-sm text-[#D1D5DB]">Preview</Text>
+                    <Text className="text-sm text-text-secondary">Preview</Text>
                     <Pressable className="flex-row items-center gap-1" onPress={handleCopy}>
                       {copied ? <Check stroke="#22C55E" size={14} /> : <Copy stroke="#9CA3AF" size={14} />}
-                      <Text className="text-xs text-[#9CA3AF]">{copied ? 'Copiado!' : 'Copiar'}</Text>
+                      <Text className="text-xs text-text-muted">{copied ? 'Copiado!' : 'Copiar'}</Text>
                     </Pressable>
                   </View>
-                  <View className="min-h-[140px] rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+                  <View className="min-h-[140px] rounded-lg border border-border bg-card p-3">
                     <Text className="text-sm leading-6 text-white">{renderedMessage || 'Selecione um template'}</Text>
                   </View>
                 </View>
 
-                <View className="rounded-lg bg-[#1A1A1A] p-2">
-                  <Text className="text-xs text-[#9CA3AF]">
+                <View className="rounded-lg bg-card p-2">
+                  <Text className="text-xs text-text-muted">
                     <Text className="font-semibold">Dados do vendedor:</Text> {seller.name} • Meta: R${' '}
                     {seller.goal.toLocaleString('pt-BR')} • Vendido: R$ {seller.sales.toLocaleString('pt-BR')}
                   </Text>

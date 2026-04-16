@@ -89,15 +89,15 @@ export default function CompanyDetailsPage() {
 
   if (!companyId) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6">
         <Text className="text-lg font-semibold text-white">Sem empresa vinculada</Text>
-        <Text className="mt-2 text-center text-[#9CA3AF]">Vincule uma empresa para editar os dados.</Text>
+        <Text className="mt-2 text-center text-text-muted">Vincule uma empresa para editar os dados.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.replace('/(gestor)/perfil')}
@@ -108,20 +108,20 @@ export default function CompanyDetailsPage() {
         {loading ? (
           <View className="mt-2 flex-row items-center gap-2">
             <ActivityIndicator size="small" color="#FF6B35" />
-            <Text className="text-sm text-[#9CA3AF]">Carregando dados da empresa...</Text>
+            <Text className="text-sm text-text-muted">Carregando dados da empresa...</Text>
           </View>
         ) : (
-          <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-            <Text className="mb-2 text-sm text-[#D1D5DB]">Nome da empresa</Text>
+          <View className="rounded-2xl border border-border bg-surface p-4">
+            <Text className="mb-2 text-sm text-text-secondary">Nome da empresa</Text>
             <TextInput
               value={companyName}
               onChangeText={setCompanyName}
               placeholder="Nome da empresa"
               placeholderTextColor="#6B7280"
-              className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+              className="h-12 rounded-xl border border-border bg-card px-3 text-white"
             />
 
-            <View className="mt-4 gap-2 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+            <View className="mt-4 gap-2 rounded-xl border border-border bg-card p-3">
               <InfoRow label="ID da empresa" value={company?.id || '-'} />
               <InfoRow label="Status" value={company?.status || '-'} />
               <InfoRow label="Plano" value={company?.plan_id || 'Sem plano'} />
@@ -137,9 +137,9 @@ export default function CompanyDetailsPage() {
               </Button>
             </View>
 
-            <View className="mt-4 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+            <View className="mt-4 rounded-xl border border-border bg-card p-4">
               <Text className="mb-1 text-sm font-medium text-white">📅 Retroatividade de Lançamento</Text>
-              <Text className="mb-3 text-xs text-[#9CA3AF]">
+              <Text className="mb-3 text-xs text-text-muted">
                 Define até quantos dias no passado um lançamento de venda pode ser registrado.
               </Text>
               <View className="flex-row items-center gap-2">
@@ -149,9 +149,9 @@ export default function CompanyDetailsPage() {
                   keyboardType="number-pad"
                   placeholder="30"
                   placeholderTextColor="#6B7280"
-                  className="h-11 w-24 rounded-xl border border-[#2D2D2D] bg-[#111111] px-3 text-white"
+                  className="h-11 w-24 rounded-xl border border-border bg-surface px-3 text-white"
                 />
-                <Text className="text-sm text-[#9CA3AF]">dias para trás</Text>
+                <Text className="text-sm text-text-muted">dias para trás</Text>
               </View>
               <View className="mt-3">
                 <Button
@@ -173,7 +173,7 @@ export default function CompanyDetailsPage() {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-center justify-between">
-      <Text className="text-sm text-[#9CA3AF]">{label}</Text>
+      <Text className="text-sm text-text-muted">{label}</Text>
       <Text className="max-w-[65%] text-right text-sm text-white">{value}</Text>
     </View>
   );

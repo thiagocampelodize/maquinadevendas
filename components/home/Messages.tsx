@@ -91,10 +91,10 @@ export function Messages({
     <Modal visible={shouldRender} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">Mensagens Prontas</Text>
             <Pressable onPress={onClose}>
               <X stroke="#FFFFFF" size={20} />
@@ -102,13 +102,13 @@ export function Messages({
           </View>
 
           <ScrollView className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
-              <Text className="text-sm text-[#9CA3AF]">
+            <View className="rounded-xl border border-border bg-card p-4">
+              <Text className="text-sm text-text-muted">
                 Copie e envie mensagens motivacionais para seu time
               </Text>
             </View>
 
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-2">
+            <View className="rounded-xl border border-border bg-card p-2">
               <View className="flex-row gap-2">
                 <Tab label="Todas" active={activeFilter === 'all'} onPress={() => setActiveFilter('all')} />
                 <Tab label="Meio-Dia" active={activeFilter === 'noon'} onPress={() => setActiveFilter('noon')} />
@@ -125,9 +125,9 @@ export function Messages({
             />
 
             {(activeFilter === 'all' || activeFilter === 'noon') ? (
-              <View className="gap-3 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+              <View className="gap-3 rounded-xl border border-border bg-card p-4">
                 <Text className="text-base font-semibold text-white">📈 Mensagens Rotina do Meio-Dia</Text>
-                <Text className="text-xs text-[#9CA3AF]">Escolha uma das 3 variacoes para envio no meio do dia.</Text>
+                <Text className="text-xs text-text-muted">Escolha uma das 3 variacoes para envio no meio do dia.</Text>
 
                 <MessageCard title="Modelo Base" text={noonMessage1} copied={copiedId === 'noon1'} onCopy={() => copy(noonMessage1, 'noon1')} />
                 <MessageCard title="Variacao 1 - Foco no que Falta" text={noonMessage2} copied={copiedId === 'noon2'} onCopy={() => copy(noonMessage2, 'noon2')} />
@@ -136,9 +136,9 @@ export function Messages({
             ) : null}
 
             {(activeFilter === 'all' || activeFilter === 'evening') ? (
-              <View className="gap-3 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+              <View className="gap-3 rounded-xl border border-border bg-card p-4">
                 <Text className="text-base font-semibold text-white">🏆 Mensagens Rotina das 17:45</Text>
-                <Text className="text-xs text-[#9CA3AF]">Escolha uma das 3 variacoes para envio no final do dia.</Text>
+                <Text className="text-xs text-text-muted">Escolha uma das 3 variacoes para envio no final do dia.</Text>
 
                 <MessageCard title="Modelo Base" text={eveningMessage1} copied={copiedId === 'evening1'} onCopy={() => copy(eveningMessage1, 'evening1')} />
                 <MessageCard title="Variacao 1 - Podio dos Campeoes" text={eveningMessage2} copied={copiedId === 'evening2'} onCopy={() => copy(eveningMessage2, 'evening2')} />
@@ -147,7 +147,7 @@ export function Messages({
             ) : null}
 
             {(activeFilter === 'all' || activeFilter === 'individual') ? (
-              <View className="gap-3 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+              <View className="gap-3 rounded-xl border border-border bg-card p-4">
                 <Text className="text-base font-semibold text-white">Mensagens Individuais</Text>
                 {salesTeam.map((seller) => {
                   const text = `💪 ${seller.name}, vamos la!\n\nVoce esta em ${seller.percentageOfGoal.toFixed(1)}% da sua meta mensal (${seller.sales.toLocaleString('pt-BR', {
@@ -184,9 +184,9 @@ function Tab({ label, active, onPress }: { label: string; active: boolean; onPre
   return (
     <Pressable
       onPress={onPress}
-      className={`flex-1 rounded-lg px-2 py-2 ${active ? 'bg-[#FF6B35]' : 'bg-[#262626]'}`}
+      className={`flex-1 rounded-lg px-2 py-2 ${active ? 'bg-[#FF6B35]' : 'bg-card-elevated'}`}
     >
-      <Text className={`text-center text-xs ${active ? 'text-white' : 'text-[#9CA3AF]'}`}>{label}</Text>
+      <Text className={`text-center text-xs ${active ? 'text-white' : 'text-text-muted'}`}>{label}</Text>
     </Pressable>
   );
 }
@@ -203,10 +203,10 @@ function MessageCard({
   onCopy: () => void;
 }) {
   return (
-    <View className="rounded-xl border border-[#2D2D2D] bg-[#111111] p-3">
+    <View className="rounded-xl border border-border bg-surface p-3">
       <Text className="mb-2 text-sm font-medium text-white">{title}</Text>
-      <View className="mb-3 rounded-lg bg-[#1A1A1A] p-3">
-        <Text className="text-sm leading-6 text-[#D1D5DB]">{text}</Text>
+      <View className="mb-3 rounded-lg bg-card p-3">
+        <Text className="text-sm leading-6 text-text-secondary">{text}</Text>
       </View>
       <Button variant="outline" onPress={onCopy}>
         {copied ? 'Copiado!' : 'Copiar Mensagem'}

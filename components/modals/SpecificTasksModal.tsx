@@ -116,10 +116,10 @@ export function SpecificTasksModal({
     <Modal visible={shouldRender} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">Tarefas Especificas</Text>
             <Pressable onPress={onClose}>
               <X stroke="#FFFFFF" size={20} />
@@ -127,14 +127,14 @@ export function SpecificTasksModal({
           </View>
 
           <ScrollView className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+            <View className="rounded-xl border border-border bg-card p-4">
               <Text className="mb-3 text-sm font-semibold text-white">Nova tarefa</Text>
               <TextInput
                 value={newTaskName}
                 onChangeText={setNewTaskName}
                 placeholder="Nome da tarefa"
                 placeholderTextColor="#6B7280"
-                className="mb-3 rounded-lg border border-[#2D2D2D] bg-[#111111] px-3 py-2 text-white"
+                className="mb-3 rounded-lg border border-border bg-surface px-3 py-2 text-white"
               />
 
               <View className="mb-3">
@@ -160,21 +160,21 @@ export function SpecificTasksModal({
               </View>
             </View>
 
-            <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-4">
+            <View className="rounded-xl border border-border bg-card p-4">
               <Text className="mb-3 text-sm font-semibold text-white">Tarefas do dia</Text>
 
               {existingTasks.length === 0 ? (
-                <Text className="text-sm text-[#9CA3AF]">Nenhuma tarefa especifica cadastrada hoje.</Text>
+                <Text className="text-sm text-text-muted">Nenhuma tarefa especifica cadastrada hoje.</Text>
               ) : null}
 
               {existingTasks.map((task) => (
-                <View key={task.id} className="mb-2 rounded-lg border border-[#2D2D2D] bg-[#111111] p-3">
+                <View key={task.id} className="mb-2 rounded-lg border border-border bg-surface p-3">
                   {editingTaskId === task.id ? (
                     <View className="gap-2">
                       <TextInput
                         value={editingTaskName}
                         onChangeText={setEditingTaskName}
-                        className="rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-2 text-white"
+                        className="rounded-lg border border-border bg-card px-3 py-2 text-white"
                         placeholder="Nome da tarefa"
                         placeholderTextColor="#6B7280"
                       />
@@ -197,7 +197,7 @@ export function SpecificTasksModal({
                   ) : (
                     <>
                       <Text className="text-sm text-white">{task.task}</Text>
-                      <Text className="mt-1 text-xs text-[#9CA3AF]">
+                      <Text className="mt-1 text-xs text-text-muted">
                         {periodOptions.find((p) => p.value === task.period)?.label || task.period} •{' '}
                         {task.assignedTo === 'all'
                           ? 'Toda equipe'

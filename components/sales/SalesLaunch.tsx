@@ -102,16 +102,16 @@ export function SalesLaunch({ isOpen, onClose, salesTeam, shift, currentUserId, 
     <Modal visible={shouldRender} transparent animationType="none" onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/70" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#0f1117]"
+          className="flex-1 rounded-t-2xl border border-border bg-[#0f1117]"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] px-4 py-4">
+          <View className="flex-row items-center justify-between border-b border-border px-4 py-4">
             <View>
               <View className="flex-row items-center gap-2">
                 <DollarSign stroke="#FF6B35" size={22} />
                 <Text className="text-3xl font-semibold text-white">Lancar Vendas</Text>
               </View>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">
+              <Text className="mt-1 text-sm text-text-muted">
                 Turno:{' '}
                 {shift === 'morning' ? '🌅 Manha' : shift === 'afternoon' ? '☀️ Tarde' : '🌙 Noite'}
               </Text>
@@ -126,13 +126,13 @@ export function SalesLaunch({ isOpen, onClose, salesTeam, shift, currentUserId, 
               <Text className="mb-3 text-2xl font-medium text-white">Adicionar Venda</Text>
 
               <View className="mb-3">
-                <Text className="mb-2 text-sm text-[#D1D5DB]">Data de Referencia</Text>
+                <Text className="mb-2 text-sm text-text-secondary">Data de Referencia</Text>
                 <Select
                   value={selectedDate}
                   options={dateOptions}
                   onValueChange={setSelectedDate}
                 />
-                <Text className="mt-2 text-xs text-[#9CA3AF]">
+                <Text className="mt-2 text-xs text-text-muted">
                   Permitido: hoje e ate {retroactiveDaysLimit} {retroactiveDaysLimit === 1 ? 'dia anterior' : 'dias anteriores'}.
                 </Text>
               </View>
@@ -142,9 +142,9 @@ export function SalesLaunch({ isOpen, onClose, salesTeam, shift, currentUserId, 
               </View>
 
               <View className="mb-3">
-                <Text className="mb-2 text-sm text-[#D1D5DB]">Valor da Venda</Text>
+                <Text className="mb-2 text-sm text-text-secondary">Valor da Venda</Text>
                 <View className="h-12 flex-row items-center rounded-xl border border-[#475569] bg-[#334155] px-3">
-                  <Text className="mr-2 text-xl text-[#9CA3AF]">R$</Text>
+                  <Text className="mr-2 text-xl text-text-muted">R$</Text>
                   <TextInput
                     value={amount}
                     onChangeText={(text) => setAmount(formatCurrency(text))}
@@ -167,14 +167,14 @@ export function SalesLaunch({ isOpen, onClose, salesTeam, shift, currentUserId, 
             </View>
 
             <View className="rounded-xl border-2 border-[#FF6B35] bg-[#1B263B] p-4">
-              <Text className="text-sm text-[#9CA3AF]">Total do Turno</Text>
+              <Text className="text-sm text-text-muted">Total do Turno</Text>
               <Text className="mt-1 text-5xl font-semibold text-[#E5E7EB]">
                 {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </Text>
             </View>
 
             {entries.map((entry, idx) => (
-              <View key={`${entry.sellerId}-${idx}`} className="rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+              <View key={`${entry.sellerId}-${idx}`} className="rounded-lg border border-border bg-card p-3">
                 <Text className="text-sm text-white">{entry.sellerName}</Text>
                 <Text className={`text-sm ${entry.amount < 0 ? 'text-red-400' : 'text-[#FF6B35]'}`}>
                   {entry.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -202,7 +202,7 @@ export function SalesLaunch({ isOpen, onClose, salesTeam, shift, currentUserId, 
             </View>
 
             <View className="rounded-lg bg-[#1B263B] p-3">
-              <Text className="text-sm text-[#9CA3AF]">
+              <Text className="text-sm text-text-muted">
                 💡 <Text className="font-semibold">Dica:</Text> Lance as vendas de cada vendedor individualmente. Voce pode adicionar multiplas vendas antes de salvar.
               </Text>
             </View>

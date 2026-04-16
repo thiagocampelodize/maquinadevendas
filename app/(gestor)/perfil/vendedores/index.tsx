@@ -266,15 +266,15 @@ export default function SellersListPage() {
 
   if (!companyId) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6">
         <Text className="text-lg font-semibold text-white">Sem empresa vinculada</Text>
-        <Text className="mt-2 text-center text-[#9CA3AF]">Vincule uma empresa para gerenciar vendedores.</Text>
+        <Text className="mt-2 text-center text-text-muted">Vincule uma empresa para gerenciar vendedores.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.replace('/(gestor)/perfil')}
@@ -294,19 +294,19 @@ export default function SellersListPage() {
             onChangeText={setSearch}
             placeholder="Buscar por nome ou email"
             placeholderTextColor="#6B7280"
-            className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+            className="h-12 rounded-xl border border-border bg-card px-3 text-white"
           />
 
           <View className="mt-3 flex-row gap-2">
             <Pressable
               onPress={() => setOnlyActive(false)}
-              className={`flex-1 rounded-xl border px-3 py-2 ${!onlyActive ? 'border-[#FF6B35] bg-[#FF6B3522]' : 'border-[#2D2D2D] bg-[#1A1A1A]'}`}
+              className={`flex-1 rounded-xl border px-3 py-2 ${!onlyActive ? 'border-[#FF6B35] bg-[#FF6B3522]' : 'border-border bg-card'}`}
             >
-              <Text className={`text-center text-sm font-semibold ${!onlyActive ? 'text-[#FF6B35]' : 'text-[#D1D5DB]'}`}>Todos</Text>
+              <Text className={`text-center text-sm font-semibold ${!onlyActive ? 'text-[#FF6B35]' : 'text-text-secondary'}`}>Todos</Text>
             </Pressable>
             <Pressable
               onPress={() => setOnlyActive(true)}
-              className={`flex-1 rounded-xl border px-3 py-2 ${onlyActive ? 'border-[#22C55E] bg-[#14532D]' : 'border-[#2D2D2D] bg-[#1A1A1A]'}`}
+              className={`flex-1 rounded-xl border px-3 py-2 ${onlyActive ? 'border-[#22C55E] bg-[#14532D]' : 'border-border bg-card'}`}
             >
               <Text className="text-center text-sm font-semibold text-white">Somente ativos</Text>
             </Pressable>
@@ -316,29 +316,29 @@ export default function SellersListPage() {
         {loading ? (
           <View className="mt-2 flex-row items-center gap-2">
             <ActivityIndicator size="small" color="#FF6B35" />
-            <Text className="text-sm text-[#9CA3AF]">Carregando vendedores...</Text>
+            <Text className="text-sm text-text-muted">Carregando vendedores...</Text>
           </View>
         ) : visibleSellers.length === 0 ? (
-          <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
-            <Text className="text-sm text-[#9CA3AF]">Nenhum vendedor encontrado com os filtros atuais.</Text>
+          <View className="rounded-2xl border border-border bg-surface p-4">
+            <Text className="text-sm text-text-muted">Nenhum vendedor encontrado com os filtros atuais.</Text>
           </View>
         ) : (
           <View className="gap-3">
             {visibleSellers.map((seller) => (
-              <View key={seller.id} className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+              <View key={seller.id} className="rounded-2xl border border-border bg-surface p-4">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 pr-3">
                     <View className="flex-row items-center gap-2">
                       <UserRound size={16} color="#FF6B35" />
                       <Text className="text-base font-semibold text-white">{seller.full_name}</Text>
                     </View>
-                    <Text className="mt-1 text-xs text-[#9CA3AF]">{seller.email}</Text>
-                    <Text className="mt-2 text-sm text-[#D1D5DB]">
+                    <Text className="mt-1 text-xs text-text-muted">{seller.email}</Text>
+                    <Text className="mt-2 text-sm text-text-secondary">
                       Meta principal: {formatMoneyLabel(seller.individual_goal)}
                     </Text>
-                    <Text className="mt-1 text-sm text-[#9CA3AF]">Meta diaria: {formatMoneyLabel(seller.daily_goal)}</Text>
-                    <Text className="mt-1 text-sm text-[#9CA3AF]">Meta 2: {formatMoneyLabel(seller.goal_2)}</Text>
-                    <Text className="mt-1 text-sm text-[#9CA3AF]">Supermeta: {formatMoneyLabel(seller.super_goal)}</Text>
+                    <Text className="mt-1 text-sm text-text-muted">Meta diaria: {formatMoneyLabel(seller.daily_goal)}</Text>
+                    <Text className="mt-1 text-sm text-text-muted">Meta 2: {formatMoneyLabel(seller.goal_2)}</Text>
+                    <Text className="mt-1 text-sm text-text-muted">Supermeta: {formatMoneyLabel(seller.super_goal)}</Text>
                   </View>
 
                   <View className="items-end gap-2">
@@ -358,7 +358,7 @@ export default function SellersListPage() {
                           </Text>
                         )}
                       </Pressable>
-                      <Pressable className="rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] p-2" onPress={() => openEditModal(seller)}>
+                      <Pressable className="rounded-lg border border-border bg-card p-2" onPress={() => openEditModal(seller)}>
                         <Pencil size={14} color="#D1D5DB" />
                       </Pressable>
                     </View>
@@ -375,7 +375,7 @@ export default function SellersListPage() {
           <Animated.View style={animatedBackdropStyle} className="flex-1 bg-black/80">
             <Animated.View
               style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
-              className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111] p-4"
+              className="flex-1 rounded-t-2xl border border-border bg-surface p-4"
             >
               <View className="mb-4 flex-row items-center justify-between">
                 <Text className="text-lg font-semibold text-white">{editingSeller ? 'Editar vendedor' : 'Novo vendedor'}</Text>
@@ -391,7 +391,7 @@ export default function SellersListPage() {
                     onChangeText={setName}
                     placeholder="Nome completo"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -402,7 +402,7 @@ export default function SellersListPage() {
                     placeholder="0,00"
                     keyboardType="numeric"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -413,7 +413,7 @@ export default function SellersListPage() {
                     placeholder="0,00"
                     keyboardType="numeric"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -424,7 +424,7 @@ export default function SellersListPage() {
                     placeholder="0,00"
                     keyboardType="numeric"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -435,7 +435,7 @@ export default function SellersListPage() {
                     placeholder="0,00"
                     keyboardType="numeric"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -446,7 +446,7 @@ export default function SellersListPage() {
                     placeholder="0,00"
                     keyboardType="numeric"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -457,7 +457,7 @@ export default function SellersListPage() {
                     placeholder="0,00"
                     keyboardType="numeric"
                     placeholderTextColor="#6B7280"
-                    className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                    className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                   />
                 </Field>
 
@@ -465,13 +465,13 @@ export default function SellersListPage() {
                   <View className="flex-row gap-2">
                     <Pressable
                       onPress={() => setStatus('active')}
-                      className={`flex-1 rounded-xl border px-3 py-2 ${status === 'active' ? 'border-green-500 bg-[#14532D]' : 'border-[#2D2D2D] bg-[#1A1A1A]'}`}
+                      className={`flex-1 rounded-xl border px-3 py-2 ${status === 'active' ? 'border-green-500 bg-[#14532D]' : 'border-border bg-card'}`}
                     >
                       <Text className="text-center font-semibold text-white">Ativo</Text>
                     </Pressable>
                     <Pressable
                       onPress={() => setStatus('inactive')}
-                      className={`flex-1 rounded-xl border px-3 py-2 ${status === 'inactive' ? 'border-red-500 bg-[#7F1D1D]' : 'border-[#2D2D2D] bg-[#1A1A1A]'}`}
+                      className={`flex-1 rounded-xl border px-3 py-2 ${status === 'inactive' ? 'border-red-500 bg-[#7F1D1D]' : 'border-border bg-card'}`}
                     >
                       <Text className="text-center font-semibold text-white">Inativo</Text>
                     </Pressable>
@@ -493,7 +493,7 @@ export default function SellersListPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View>
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       {children}
     </View>
   );

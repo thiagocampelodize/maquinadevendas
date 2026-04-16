@@ -29,9 +29,9 @@ export function Input({
 }: InputProps) {
   return (
     <View style={style}>
-      {label ? <Text className="mb-2 text-sm text-[#9CA3AF]">{label}</Text> : null}
+      {label ? <Text className="mb-2 text-sm text-text-muted">{label}</Text> : null}
       <TextInput
-        className="h-12 rounded-xl border border-[#2D2D2D] bg-[#111111] px-4 text-base text-white"
+        className="h-12 rounded-xl border border-border bg-surface px-4 text-base text-white"
         placeholder={placeholder}
         placeholderTextColor="#6B7280"
         value={value}

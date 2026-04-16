@@ -13,7 +13,7 @@ import {
   getBrazilMonthString,
   getCurrentDayBrazil,
   getDaysInMonthBrazil,
-  getStartOfMonthBrazil,
+  getDaysInMonthFor,
   isSameDayBrazil,
 } from '@/utils/dateUtils';
 import { hasValidGoal } from '@/utils/goalUtils';
@@ -49,7 +49,7 @@ export interface DashboardData {
   reload: () => Promise<void>;
 }
 
-export function useDashboardData(): DashboardData {
+export function useDashboardData(month?: string): DashboardData {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +61,21 @@ export function useDashboardData(): DashboardData {
   const [grossRevenue, setGrossRevenue] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date>(getBrazilDate());
 
-  const currentDay = useMemo(() => getCurrentDayBrazil(), []);
-  const daysInMonth = useMemo(() => getDaysInMonthBrazil(), []);
+  // Mês efetivo: parâmetro ou atual
+  const effectiveMonth = month || getBrazilMonthString();
+  const isCurrentMonth = effectiveMonth === getBrazilMonthString();
+
+  const daysInMonth = useMemo(() => {
+    if (isCurrentMonth) return getDaysInMonthBrazil();
+    const [y, m] = effectiveMonth.split('-').map(Number);
+    return getDaysInMonthFor(y, m - 1);
+  }, [effectiveMonth, isCurrentMonth]);
+
+  // Para mês passado, o "dia atual" é o último dia do mês (já fechou)
+  const currentDay = useMemo(() => {
+    if (isCurrentMonth) return getCurrentDayBrazil();
+    return daysInMonth;
+  }, [isCurrentMonth, daysInMonth]);
 
   const projection = useMemo(
     () => calculateLinearProjection(currentSales, currentDay, daysInMonth).projection,
@@ -118,18 +131,17 @@ export function useDashboardData(): DashboardData {
     markBootstrapStage('dashboard-load-start', { company_present: true });
 
     try {
-      const startOfMonth = getStartOfMonthBrazil();
       const todayBrazil = getBrazilDate();
-
-      const monthKey = getBrazilMonthString();
+      const monthKey = effectiveMonth;
+      const [y, m] = monthKey.split('-').map(Number);
+      const startDateISO = `${monthKey}-01`;
+      const endDateISO = isCurrentMonth
+        ? formatDateToISO(todayBrazil)
+        : `${monthKey}-${String(getDaysInMonthFor(y, m - 1)).padStart(2, '0')}`;
 
       const [goalData, allMonthSales, companyUsers] = await Promise.all([
         goalsService.getGoalByMonth(user.company_id, monthKey),
-        salesService.getSalesByDateRange(
-          user.company_id,
-          formatDateToISO(startOfMonth),
-          formatDateToISO(todayBrazil),
-        ),
+        salesService.getSalesByDateRange(user.company_id, startDateISO, endDateISO),
         usersService.getSellersByCompany(user.company_id),
       ]);
       markBootstrapStage('dashboard-load-queries-finished', {
@@ -156,12 +168,13 @@ export function useDashboardData(): DashboardData {
 
       const salesMap = new Map<string, number>();
       const salesTodayMap = new Map<string, number>();
-      const currentDayString = formatDateToISO(todayBrazil);
+      // "Hoje" só faz sentido no mês atual; em meses passados, salesToday = 0
+      const currentDayString = isCurrentMonth ? formatDateToISO(todayBrazil) : null;
 
       allMonthSales.forEach((sale) => {
         const val = sale.value || 0;
         salesMap.set(sale.seller_id, (salesMap.get(sale.seller_id) || 0) + val);
-        if (sale.sale_date === currentDayString) {
+        if (currentDayString && sale.sale_date === currentDayString) {
           salesTodayMap.set(sale.seller_id, (salesTodayMap.get(sale.seller_id) || 0) + val);
         }
       });
@@ -208,13 +221,14 @@ export function useDashboardData(): DashboardData {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.company_id]);
+  }, [user?.company_id, effectiveMonth, isCurrentMonth, daysInMonth]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
 
   useEffect(() => {
+    if (!isCurrentMonth) return; // não auto-recarrega meses fechados
     const intervalId = setInterval(() => {
       const now = getBrazilDate();
       if (!isSameDayBrazil(lastUpdated, now)) {
@@ -223,7 +237,7 @@ export function useDashboardData(): DashboardData {
     }, 300000);
 
     return () => clearInterval(intervalId);
-  }, [lastUpdated, loadData]);
+  }, [lastUpdated, loadData, isCurrentMonth]);
 
   return {
     isLoading,

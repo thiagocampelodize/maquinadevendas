@@ -2,9 +2,11 @@ import { useRouter } from 'expo-router';
 import {
   Activity,
   BarChart3,
+  Bug,
   Building2,
   DollarSign,
   Lock,
+  Receipt,
   Settings,
 } from 'lucide-react-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -16,6 +18,12 @@ const modules = [
     subtitle: 'MRR, inadimplência e ticket médio',
     icon: DollarSign,
     route: '/(admin)/financial' as const,
+  },
+  {
+    label: 'Recebíveis',
+    subtitle: 'Cobranças e status de pagamento',
+    icon: Receipt,
+    route: '/(admin)/receivables' as const,
   },
   {
     label: 'Assinaturas',
@@ -47,24 +55,30 @@ const modules = [
     icon: Building2,
     route: '/(admin)/consolidated' as const,
   },
+  // {
+  //   label: 'Debug / Simulação',
+  //   subtitle: 'Validar telas de erro (remover após testes)',
+  //   icon: Bug,
+  //   route: '/debug' as const,
+  // },
 ];
 
 export default function MaisPage() {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 28 }}>
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-xl font-bold text-white">Mais módulos</Text>
-          <Text className="mt-1 text-sm text-[#9CA3AF]">Acesse os demais recursos do painel administrativo.</Text>
+          <Text className="mt-1 text-sm text-text-muted">Acesse os demais recursos do painel administrativo.</Text>
         </View>
 
         <View className="gap-2">
           {modules.map((item) => (
             <Pressable
               key={item.route}
-              className="flex-row items-center gap-3 rounded-xl border border-[#2D2D2D] bg-[#111111] p-4"
+              className="flex-row items-center gap-3 rounded-xl border border-border bg-surface p-4"
               onPress={() => router.push(item.route)}
             >
               <View className="rounded-lg bg-[#2A1A12] p-3">
@@ -72,9 +86,9 @@ export default function MaisPage() {
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-white">{item.label}</Text>
-                <Text className="mt-0.5 text-xs text-[#9CA3AF]">{item.subtitle}</Text>
+                <Text className="mt-0.5 text-xs text-text-muted">{item.subtitle}</Text>
               </View>
-              <Text className="text-[#6B7280]">›</Text>
+              <Text className="text-text-faint">›</Text>
             </Pressable>
           ))}
         </View>

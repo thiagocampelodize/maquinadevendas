@@ -281,10 +281,10 @@ export function GlobalMessageModal({
     >
       <Animated.View className="flex-1 bg-black/80" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <Text className="text-lg font-semibold text-white">
               Enviar Mensagem
             </Text>
@@ -298,16 +298,16 @@ export function GlobalMessageModal({
             contentContainerStyle={{ gap: 12, paddingBottom: 24 }}
           >
             {isLoading ? (
-              <Text className="text-[#9CA3AF]">Carregando...</Text>
+              <Text className="text-text-muted">Carregando...</Text>
             ) : null}
 
             {!isLoading ? (
               <>
                 <View>
-                  <Text className="mb-2 text-sm text-[#D1D5DB]">
+                  <Text className="mb-2 text-sm text-text-secondary">
                     <Users size={14} color="#9CA3AF" /> Vendedor
                   </Text>
-                  <View className="mb-2 flex-row items-center gap-2 rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3">
+                  <View className="mb-2 flex-row items-center gap-2 rounded-lg border border-border bg-card px-3">
                     <Search size={14} color="#9CA3AF" />
                     <TextInput
                       value={searchTerm}
@@ -357,7 +357,7 @@ export function GlobalMessageModal({
 
                 <View>
                   <View className="mb-2 flex-row items-center justify-between">
-                    <Text className="text-sm text-[#D1D5DB]">Preview</Text>
+                    <Text className="text-sm text-text-secondary">Preview</Text>
                     <Pressable
                       className="flex-row items-center gap-1"
                       onPress={handleCopy}
@@ -368,12 +368,12 @@ export function GlobalMessageModal({
                       ) : (
                         <Copy stroke="#9CA3AF" size={14} />
                       )}
-                      <Text className="text-xs text-[#9CA3AF]">
+                      <Text className="text-xs text-text-muted">
                         {copied ? "Copiado!" : "Copiar"}
                       </Text>
                     </Pressable>
                   </View>
-                  <View className="min-h-[140px] rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+                  <View className="min-h-[140px] rounded-lg border border-border bg-card p-3">
                     <Text className="text-sm leading-6 text-white">
                       {renderedMessage ||
                         (!selectedSeller
@@ -384,8 +384,8 @@ export function GlobalMessageModal({
                 </View>
 
                 {selectedSeller ? (
-                  <View className="rounded-lg bg-[#1A1A1A] p-2">
-                    <Text className="text-xs text-[#9CA3AF]">
+                  <View className="rounded-lg bg-card p-2">
+                    <Text className="text-xs text-text-muted">
                       <Text className="font-semibold">Dados:</Text>{" "}
                       {selectedSeller.name} • Meta: R${" "}
                       {selectedSeller.goal.toLocaleString("pt-BR")} • Vendido:

@@ -39,7 +39,7 @@ export function Step2Goals({
           <Target stroke="#FFFFFF" size={40} />
         </View>
         <Text className="mb-2 text-center text-2xl text-white">Cadastro de Metas 🎯</Text>
-        <Text className="text-center text-[#9CA3AF]">Quais as metas de vendas para este mes?</Text>
+        <Text className="text-center text-text-muted">Quais as metas de vendas para este mes?</Text>
       </View>
 
       <Card>
@@ -47,14 +47,14 @@ export function Step2Goals({
 
         <View className="gap-4">
           <View>
-            <Text className="mb-2 text-sm text-[#D1D5DB]">Meta do Mes (R$) *</Text>
+            <Text className="mb-2 text-sm text-text-secondary">Meta do Mes (R$) *</Text>
             <TextInput
               keyboardType="numeric"
               value={monthlyGoal}
               onChangeText={(text) => setMonthlyGoal(formatCurrency(text))}
               placeholder="100.000,00"
               placeholderTextColor="#6B7280"
-              className={`rounded-xl border-2 bg-[#262626] px-4 py-4 text-lg text-white ${showErrors && !canProceed ? 'border-red-500' : 'border-[#404040]'}`}
+              className={`rounded-xl border-2 bg-card-elevated px-4 py-4 text-lg text-white ${showErrors && !canProceed ? 'border-red-500' : 'border-[#404040]'}`}
             />
             {showErrors && !canProceed ? (
               <Text className="mt-2 text-xs text-red-500">Informe uma meta valida para continuar.</Text>
@@ -62,16 +62,16 @@ export function Step2Goals({
           </View>
 
           <View>
-            <Text className="mb-2 text-sm text-[#D1D5DB]">Total acumulado de vendas ate agora (R$)</Text>
+            <Text className="mb-2 text-sm text-text-secondary">Total acumulado de vendas ate agora (R$)</Text>
             <TextInput
               keyboardType="numeric"
               value={initialSales}
               onChangeText={(text) => setInitialSales(formatCurrency(text))}
               placeholder="0,00"
               placeholderTextColor="#6B7280"
-              className="rounded-xl border-2 border-[#404040] bg-[#262626] px-4 py-4 text-white"
+              className="rounded-xl border-2 border-[#404040] bg-card-elevated px-4 py-4 text-white"
             />
-            <Text className="mt-2 text-xs text-[#9CA3AF]">💡 Se sua empresa ja vendeu este mes, informe aqui</Text>
+            <Text className="mt-2 text-xs text-text-muted">💡 Se sua empresa ja vendeu este mes, informe aqui</Text>
           </View>
         </View>
       </Card>

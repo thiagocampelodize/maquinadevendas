@@ -19,10 +19,10 @@ export default function OnboardingStep3() {
   } = useOnboarding(() => router.replace('/'));
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['top', 'left', 'right']}>
-      <View className="border-b border-[#404040] bg-[#1a1a1a] px-6 py-4">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+      <View className="border-b border-[#404040] bg-card px-6 py-4">
         <View className="mb-2 flex-row items-center justify-between">
-          <Text className="text-sm text-[#9CA3AF]">Passo 3 de 3</Text>
+          <Text className="text-sm text-text-muted">Passo 3 de 3</Text>
           <SubmenuBackButton onPress={() => router.replace('/(auth)/onboarding/step2')} />
         </View>
         <View className="flex-row gap-2">

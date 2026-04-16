@@ -89,7 +89,7 @@ export default function VendedorPerformancePage() {
   }, [last7Total, prev7Total]);
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.replace('/(vendedor)/perfil')}
@@ -98,10 +98,10 @@ export default function VendedorPerformancePage() {
         />
 
         {loading ? (
-          <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+          <View className="rounded-2xl border border-border bg-surface p-4">
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" color="#FF6B35" />
-              <Text className="text-sm text-[#9CA3AF]">Carregando seu desempenho...</Text>
+              <Text className="text-sm text-text-muted">Carregando seu desempenho...</Text>
             </View>
           </View>
         ) : (
@@ -141,8 +141,8 @@ function MetricRow({
 }) {
   const toneClass = tone === 'good' ? 'text-green-400' : tone === 'bad' ? 'text-red-400' : highlight ? 'text-[#FF6B35]' : 'text-white';
   return (
-    <View className="mb-2 flex-row items-center justify-between rounded-lg bg-[#1A1A1A] px-3 py-2">
-      <Text className="text-sm text-[#9CA3AF]">{label}</Text>
+    <View className="mb-2 flex-row items-center justify-between rounded-lg bg-card px-3 py-2">
+      <Text className="text-sm text-text-muted">{label}</Text>
       <Text className={`text-sm font-semibold ${toneClass}`}>{value}</Text>
     </View>
   );

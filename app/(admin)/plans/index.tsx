@@ -81,7 +81,7 @@ export default function PlansManagementPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.navigate('/(admin)/mais')}
@@ -89,11 +89,11 @@ export default function PlansManagementPage() {
           subtitle="Fonte de verdade para os ciclos semestral e anual."
         />
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <View className="flex-row gap-2">
-            <Pressable className="h-10 flex-1 flex-row items-center justify-center gap-2 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A]" onPress={() => void loadPlans()}>
+            <Pressable className="h-10 flex-1 flex-row items-center justify-center gap-2 rounded-xl border border-border bg-card" onPress={() => void loadPlans()}>
               <RefreshCw size={14} color="#9CA3AF" />
-              <Text className="text-sm font-medium text-[#D1D5DB]">Recarregar</Text>
+              <Text className="text-sm font-medium text-text-secondary">Recarregar</Text>
             </Pressable>
             <Pressable className="h-10 flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-[#FF6B35]" onPress={() => void handleSave()} disabled={saving}>
               {saving ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Save size={14} color="#FFFFFF" />}
@@ -105,15 +105,15 @@ export default function PlansManagementPage() {
         {loading ? (
           <View className="py-8">
             <ActivityIndicator color="#FF6B35" />
-            <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando planos...</Text>
+            <Text className="mt-2 text-center text-sm text-text-muted">Carregando planos...</Text>
           </View>
         ) : (
           plans.map((plan) => (
-            <View key={plan.id} className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View key={plan.id} className="rounded-2xl border border-border bg-surface p-4">
               <View className="mb-3 flex-row items-center justify-between">
                 <View>
                   <Text className="text-base font-semibold text-white">{plan.plan_code === 'semestral' ? 'Semestral' : 'Anual'}</Text>
-                  <Text className="text-xs text-[#9CA3AF]">Ciclo de {plan.cycle_months} meses com faixas por usuário</Text>
+                  <Text className="text-xs text-text-muted">Ciclo de {plan.cycle_months} meses com faixas por usuário</Text>
                 </View>
                 <View className="items-center">
                   <Switch
@@ -121,7 +121,7 @@ export default function PlansManagementPage() {
                     onValueChange={(value) => updatePlan(plan.plan_code, 'active', value)}
                     trackColor={{ false: '#374151', true: '#FF6B35' }}
                   />
-                  <Text className="mt-1 text-xs text-[#9CA3AF]">{plan.active ? 'Ativo' : 'Inativo'}</Text>
+                  <Text className="mt-1 text-xs text-text-muted">{plan.active ? 'Ativo' : 'Inativo'}</Text>
                 </View>
               </View>
 
@@ -171,9 +171,9 @@ function Field({
 }) {
   return (
     <View className="mt-3">
-      <Text className="mb-2 text-xs text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-xs text-text-secondary">{label}</Text>
       <TextInput
-        className="h-12 rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+        className="h-12 rounded-lg border border-border bg-card px-3 text-white"
         value={value}
         keyboardType={keyboardType}
         onChangeText={onChangeText}

@@ -22,7 +22,7 @@ export default function ConsolidatedDashboardPage() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.navigate('/(admin)/mais')}
@@ -30,19 +30,19 @@ export default function ConsolidatedDashboardPage() {
           subtitle="Saúde operacional por módulo com visão executiva."
         />
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-base font-semibold text-white">Saúde dos módulos</Text>
           {loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
-              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando consolidado...</Text>
+              <Text className="mt-2 text-center text-sm text-text-muted">Carregando consolidado...</Text>
             </View>
           ) : (
             <View className="mt-3 gap-2">
               {items.map((item) => (
-                <View key={item.module} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+                <View key={item.module} className="rounded-xl border border-border bg-card p-3">
                   <Text className="text-sm font-semibold text-white">{item.module}</Text>
-                  <Text className="mt-1 text-xs text-[#9CA3AF]">Incidentes no período: {item.incidents}</Text>
+                  <Text className="mt-1 text-xs text-text-muted">Incidentes no período: {item.incidents}</Text>
                   <Text className={`mt-1 text-xs font-semibold ${item.health >= 97 ? 'text-[#34D399]' : item.health >= 90 ? 'text-[#F59E0B]' : 'text-[#F87171]'}`}>
                     Health score: {item.health}%
                   </Text>

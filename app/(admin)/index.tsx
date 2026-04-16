@@ -47,11 +47,11 @@ export default function DashboardAdminPage() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-2xl font-bold text-white">Dashboard Administrativo</Text>
-          <Text className="mt-1 text-sm text-[#9CA3AF]">Visão geral de desempenho, empresas e receitas da plataforma.</Text>
+          <Text className="mt-1 text-sm text-text-muted">Visão geral de desempenho, empresas e receitas da plataforma.</Text>
         </View>
 
         <View className="gap-3">
@@ -79,13 +79,13 @@ export default function DashboardAdminPage() {
           />
         </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-lg font-semibold text-white">Ações Rápidas</Text>
           <View className="mt-3 gap-2">
             {quickActions.map((action) => (
               <Pressable
                 key={action.route}
-                className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3"
+                className="rounded-xl border border-border bg-card p-3"
                 onPress={() => router.push(action.route)}
               >
                 <View className="flex-row items-center gap-3">
@@ -94,7 +94,7 @@ export default function DashboardAdminPage() {
                   </View>
                   <View className="flex-1">
                     <Text className="text-sm font-semibold text-white">{action.label}</Text>
-                    <Text className="text-xs text-[#9CA3AF]">{action.subtitle}</Text>
+                    <Text className="text-xs text-text-muted">{action.subtitle}</Text>
                   </View>
                 </View>
               </Pressable>
@@ -102,9 +102,9 @@ export default function DashboardAdminPage() {
           </View>
         </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-lg font-semibold text-white">Organizações Recentes</Text>
-          <Text className="mt-1 text-xs text-[#6B7280]">Ultimos cadastros monitorados no painel.</Text>
+          <Text className="mt-1 text-xs text-text-faint">Ultimos cadastros monitorados no painel.</Text>
           <View className="mt-3 gap-2">
             {loading ? (
               <View className="py-6">
@@ -112,15 +112,15 @@ export default function DashboardAdminPage() {
               </View>
             ) : (
               companies.slice(0, 4).map((company) => (
-              <Pressable key={company.id} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3" onPress={() => router.push(`/(admin)/companies/${company.id}`)}>
-                <View className="flex-row items-center justify-between gap-3">
-                  <View className="flex-1">
-                    <Text className="text-sm font-semibold text-white">{company.name}</Text>
-                    <Text className="mt-0.5 text-xs text-[#9CA3AF]">{company.plan} • {company.usersCount} usuários</Text>
+                <Pressable key={company.id} className="rounded-xl border border-border bg-card p-3" onPress={() => router.push(`/(admin)/companies/${company.id}`)}>
+                  <View className="flex-row items-center justify-between gap-3">
+                    <View className="flex-1">
+                      <Text className="text-sm font-semibold text-white">{company.name}</Text>
+                      <Text className="mt-0.5 text-xs text-text-muted">{company.plan} • {company.usersCount} usuários</Text>
+                    </View>
+                    <StatusBadge status={company.status} />
                   </View>
-                  <StatusBadge status={company.status} />
-                </View>
-              </Pressable>
+                </Pressable>
               ))
             )}
           </View>

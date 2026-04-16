@@ -29,7 +29,7 @@ const sizeClasses: Record<Size, string> = {
 const variantClasses: Record<Variant, string> = {
   default: 'bg-[#FF6B35] border border-[#FF6B35]',
   destructive: 'bg-[#DC2626] border border-[#DC2626]',
-  outline: 'bg-transparent border border-[#2D2D2D]',
+  outline: 'bg-transparent border border-border',
   ghost: 'bg-transparent border border-transparent',
   link: 'bg-transparent border border-transparent',
 };
@@ -37,8 +37,8 @@ const variantClasses: Record<Variant, string> = {
 const textVariantClasses: Record<Variant, string> = {
   default: 'text-white',
   destructive: 'text-white',
-  outline: 'text-white',
-  ghost: 'text-white',
+  outline: 'text-text-primary',
+  ghost: 'text-text-primary',
   link: 'text-[#FF6B35] underline',
 };
 

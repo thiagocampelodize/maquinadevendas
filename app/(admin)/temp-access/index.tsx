@@ -88,7 +88,7 @@ export default function TempAccessManagementPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.navigate('/(admin)/mais')}
@@ -96,7 +96,7 @@ export default function TempAccessManagementPage() {
           subtitle="Conceda ou revogue acessos emergenciais por tempo limitado."
         />
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <View className="flex-row gap-2">
             <Badge text={`Ativos: ${counts.active}`} color="#34D399" bg="#153A2E" />
             <Badge text={`Expirados: ${counts.expired}`} color="#F59E0B" bg="#3D2C0F" />
@@ -104,7 +104,7 @@ export default function TempAccessManagementPage() {
           </View>
         </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="mb-3 text-base font-semibold text-white">Conceder acesso</Text>
           <View className="gap-3">
             <Field label="Email" value={email} onChangeText={setEmail} placeholder="usuario@dominio.com" />
@@ -125,22 +125,22 @@ export default function TempAccessManagementPage() {
           </View>
         </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-base font-semibold text-white">Acessos registrados</Text>
           {loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
-              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando acessos...</Text>
+              <Text className="mt-2 text-center text-sm text-text-muted">Carregando acessos...</Text>
             </View>
           ) : (
             <View className="mt-3 gap-2">
               {accesses.map((access) => (
-                <View key={access.id} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+                <View key={access.id} className="rounded-xl border border-border bg-card p-3">
                   <Text className="text-sm font-semibold text-white">{access.email}</Text>
-                  <Text className="mt-1 text-xs text-[#9CA3AF]">{access.type} • {access.description}</Text>
-                  <Text className="text-xs text-[#9CA3AF]">Expira em: {new Date(access.expires_at).toLocaleString('pt-BR')}</Text>
+                  <Text className="mt-1 text-xs text-text-muted">{access.type} • {access.description}</Text>
+                  <Text className="text-xs text-text-muted">Expira em: {new Date(access.expires_at).toLocaleString('pt-BR')}</Text>
                   <View className="mt-2 flex-row items-center justify-between">
-                    <Text className={`text-xs font-semibold ${access.status === 'Ativo' ? 'text-[#34D399]' : access.status === 'Expirado' ? 'text-[#F59E0B]' : 'text-[#9CA3AF]'}`}>
+                    <Text className={`text-xs font-semibold ${access.status === 'Ativo' ? 'text-[#34D399]' : access.status === 'Expirado' ? 'text-[#F59E0B]' : 'text-text-muted'}`}>
                       {access.status}
                     </Text>
                     {access.status === 'Ativo' ? (
@@ -182,14 +182,14 @@ function Field({
 }) {
   return (
     <View>
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor="#6B7280"
         autoCapitalize="none"
-        className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+        className="h-12 rounded-xl border border-border bg-card px-3 text-white"
       />
     </View>
   );

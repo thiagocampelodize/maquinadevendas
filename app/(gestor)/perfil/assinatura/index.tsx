@@ -50,15 +50,15 @@ export default function SubscriptionPage() {
 
   if (!companyId) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6">
         <Text className="text-lg font-semibold text-white">Sem empresa vinculada</Text>
-        <Text className="mt-2 text-center text-[#9CA3AF]">Vincule uma empresa para acompanhar a assinatura.</Text>
+        <Text className="mt-2 text-center text-text-muted">Vincule uma empresa para acompanhar a assinatura.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.replace('/(gestor)/perfil')}
@@ -69,33 +69,33 @@ export default function SubscriptionPage() {
         {loading ? (
           <View className="mt-2 flex-row items-center gap-2">
             <ActivityIndicator size="small" color="#FF6B35" />
-            <Text className="text-sm text-[#9CA3AF]">Carregando dados da assinatura...</Text>
+            <Text className="text-sm text-text-muted">Carregando dados da assinatura...</Text>
           </View>
         ) : (
           <>
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <View className="flex-row items-center justify-between">
-                <Text className="text-base text-[#D1D5DB]">Plano atual</Text>
+                <Text className="text-base text-text-secondary">Plano atual</Text>
                 <View className={`rounded-full px-2 py-1 ${statusBadge.className}`}>
                   <Text className="text-xs text-white">{statusBadge.text}</Text>
                 </View>
               </View>
 
               <Text className="mt-2 text-2xl font-semibold text-white">{planName}</Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">
+              <Text className="mt-1 text-sm text-text-muted">
                 Empresa: {company?.name || '-'}
               </Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">
+              <Text className="mt-1 text-sm text-text-muted">
                 Vendedores cadastrados: {sellersCount}
               </Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">
+              <Text className="mt-1 text-sm text-text-muted">
                 Desde {company?.created_at ? new Date(company.created_at).toLocaleDateString('pt-BR') : '-'}
               </Text>
             </View>
 
             <SubmenuActionsCard>
               <Text className="text-base font-semibold text-white">Ajustes de assinatura</Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">
+              <Text className="mt-1 text-sm text-text-muted">
                 Em breve, você poderá gerenciar upgrade, downgrade e status da assinatura por aqui.
               </Text>
             </SubmenuActionsCard>

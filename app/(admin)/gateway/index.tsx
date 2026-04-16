@@ -197,7 +197,7 @@ export default function GatewayConfigPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <FlatList
         data={!loading && !loadError ? filteredInvoices : []}
         keyExtractor={(item) => item.id}
@@ -208,9 +208,9 @@ export default function GatewayConfigPage() {
         contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
         ListHeaderComponent={
           <View className="gap-4">
-            <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+            <View className="rounded-2xl border border-border bg-surface p-4">
               <Text className="text-xl font-semibold text-white">Gateway de Pagamento Asaas</Text>
-              <Text className="mt-1 text-sm text-[#9CA3AF]">Configuração por empresa, sincronização de cobranças e reconciliação.</Text>
+              <Text className="mt-1 text-sm text-text-muted">Configuração por empresa, sincronização de cobranças e reconciliação.</Text>
               <View className="mt-3 flex-row flex-wrap gap-2">
                 <Tag text={`Empresas com gateway: ${summary.enabledConfigs}`} tone="green" />
                 <Tag text={`Pendentes/vencidas: ${summary.pendingOrOverdue}`} tone="yellow" />
@@ -223,17 +223,17 @@ export default function GatewayConfigPage() {
 
             {!loading && !loadError ? (
               <>
-                <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                <View className="rounded-2xl border border-border bg-surface p-4">
                   <Text className="mb-3 text-base font-semibold text-white">Configuração por empresa</Text>
                   <Select label="Empresa" value={companyId} onValueChange={setCompanyId} options={companies.map((company) => ({ label: company.name, value: company.id }))} />
 
-                  <View className="mt-3 flex-row items-center justify-between rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3">
-                    <Text className="text-sm text-[#D1D5DB]">Gateway ativo</Text>
+                  <View className="mt-3 flex-row items-center justify-between rounded-xl border border-border bg-card px-3 py-3">
+                    <Text className="text-sm text-text-secondary">Gateway ativo</Text>
                     <Switch value={enabled} onValueChange={setEnabled} trackColor={{ false: '#374151', true: '#FF6B35' }} />
                   </View>
 
-                  <View className="mt-3 flex-row items-center justify-between rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3">
-                    <Text className="text-sm text-[#D1D5DB]">Modo sandbox</Text>
+                  <View className="mt-3 flex-row items-center justify-between rounded-xl border border-border bg-card px-3 py-3">
+                    <Text className="text-sm text-text-secondary">Modo sandbox</Text>
                     <Switch value={sandbox} onValueChange={setSandbox} trackColor={{ false: '#374151', true: '#FF6B35' }} />
                   </View>
 
@@ -247,13 +247,13 @@ export default function GatewayConfigPage() {
                   </View>
 
                   <View className="mt-3">
-                    <Text className="mb-2 text-sm text-[#D1D5DB]">Webhook Secret</Text>
+                    <Text className="mb-2 text-sm text-text-secondary">Webhook Secret</Text>
                     <TextInput
                       value={webhookSecret}
                       onChangeText={setWebhookSecret}
                       placeholder="Token de validação"
                       placeholderTextColor="#6B7280"
-                      className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+                      className="h-12 rounded-xl border border-border bg-card px-3 text-white"
                     />
                   </View>
 
@@ -262,7 +262,7 @@ export default function GatewayConfigPage() {
                   </Button>
                 </View>
 
-                <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                <View className="rounded-2xl border border-border bg-surface p-4">
                   <Text className="mb-3 text-base font-semibold text-white">Gerar fatura</Text>
                   <View className="gap-3">
                     <Select
@@ -291,7 +291,7 @@ export default function GatewayConfigPage() {
                   </View>
                 </View>
 
-                <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+                <View className="rounded-2xl border border-border bg-surface p-4">
                   <Select
                     label="Filtrar faturas"
                     value={invoiceStatusFilter}
@@ -304,7 +304,7 @@ export default function GatewayConfigPage() {
                       { label: 'Canceladas', value: 'cancelled' },
                     ]}
                   />
-                  <Text className="mt-2 text-xs text-[#6B7280]">{filteredInvoices.length} fatura(s) no filtro atual.</Text>
+                  <Text className="mt-2 text-xs text-text-faint">{filteredInvoices.length} fatura(s) no filtro atual.</Text>
                 </View>
               </>
             ) : null}
@@ -312,12 +312,12 @@ export default function GatewayConfigPage() {
         }
         ItemSeparatorComponent={() => <View className="h-2" />}
         renderItem={({ item: invoice }) => (
-          <View className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+          <View className="rounded-xl border border-border bg-card p-3">
             <Text className="text-sm font-semibold text-white">{invoice.company_name}</Text>
-            <Text className="mt-1 text-xs text-[#9CA3AF]">Vencimento: {new Date(`${invoice.due_date}T00:00:00`).toLocaleDateString('pt-BR')}</Text>
+            <Text className="mt-1 text-xs text-text-muted">Vencimento: {new Date(`${invoice.due_date}T00:00:00`).toLocaleDateString('pt-BR')}</Text>
             <View className="mt-2 flex-row items-center justify-between">
               <Text className="text-xs text-white">{invoice.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
-              <Text className={`text-xs font-semibold ${invoice.status === 'paid' ? 'text-[#34D399]' : invoice.status === 'overdue' ? 'text-[#F87171]' : invoice.status === 'pending' ? 'text-[#F59E0B]' : 'text-[#9CA3AF]'}`}>
+              <Text className={`text-xs font-semibold ${invoice.status === 'paid' ? 'text-[#34D399]' : invoice.status === 'overdue' ? 'text-[#F87171]' : invoice.status === 'pending' ? 'text-[#F59E0B]' : 'text-text-muted'}`}>
                 {invoice.status}
               </Text>
             </View>
@@ -342,7 +342,7 @@ export default function GatewayConfigPage() {
           loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
-              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando gateway...</Text>
+              <Text className="mt-2 text-center text-sm text-text-muted">Carregando gateway...</Text>
             </View>
           ) : loadError ? (
             <View className="py-8">
@@ -352,7 +352,7 @@ export default function GatewayConfigPage() {
               </Button>
             </View>
           ) : (
-            <Text className="py-6 text-center text-sm text-[#9CA3AF]">Sem faturas para o filtro atual.</Text>
+            <Text className="py-6 text-center text-sm text-text-muted">Sem faturas para o filtro atual.</Text>
           )
         }
       />
@@ -387,7 +387,7 @@ function Field({
 }) {
   return (
     <View>
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -395,7 +395,7 @@ function Field({
         placeholderTextColor="#6B7280"
         keyboardType={keyboardType}
         autoCapitalize="none"
-        className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+        className="h-12 rounded-xl border border-border bg-card px-3 text-white"
       />
     </View>
   );

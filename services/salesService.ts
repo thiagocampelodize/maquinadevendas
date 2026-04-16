@@ -105,6 +105,24 @@ export const salesService = {
     return data || [];
   },
 
+  async getSalesBySellerMonth(sellerId: string, month: string): Promise<number> {
+    const startDate = `${month}-01`;
+    const [y, m] = month.split('-').map(Number);
+    const days = new Date(y, m, 0).getDate();
+    const endDate = `${month}-${String(days).padStart(2, '0')}`;
+
+    const { data, error } = await supabase
+      .from('sales')
+      .select('value')
+      .eq('seller_id', sellerId)
+      .gte('sale_date', startDate)
+      .lte('sale_date', endDate)
+      .is('deleted_at', null);
+
+    if (error || !data) return 0;
+    return data.reduce((sum, row) => sum + Number(row.value || 0), 0);
+  },
+
   async getMonthSales(companyId: string, month?: string): Promise<Sale[]> {
     let startDate: string;
     let endDate: string;
@@ -162,6 +180,13 @@ export const salesService = {
       .single();
 
     if (fetchError || !oldSale) return null;
+
+    if (updates.sale_date) {
+      const dateValidation = await this.validateSaleDateConstraint(oldSale.company_id, updates.sale_date);
+      if (!dateValidation.valid) {
+        throw new Error(dateValidation.message || 'Data inválida para lançamento da venda.');
+      }
+    }
 
     const { data: updatedSale, error: updateError } = await supabase
       .from('sales')

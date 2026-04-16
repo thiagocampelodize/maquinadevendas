@@ -21,7 +21,7 @@ export function ChecklistProgress({ completedCount, totalCount, activePeriod }: 
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
-    <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-4">
+    <View className="rounded-xl border border-[#404040] bg-card p-4">
       <View className="mb-2 flex-row items-center justify-between">
         <Text className="text-sm text-[#a3a3a3]">Progresso - {label}</Text>
         <Text className="text-sm text-white">
@@ -29,7 +29,7 @@ export function ChecklistProgress({ completedCount, totalCount, activePeriod }: 
         </Text>
       </View>
 
-      <View className="h-3 w-full rounded-full bg-[#262626]">
+      <View className="h-3 w-full rounded-full bg-card-elevated">
         <View className="h-3 rounded-full bg-[#FF6B35]" style={{ width: `${progressPercentage}%` }} />
       </View>
     </View>

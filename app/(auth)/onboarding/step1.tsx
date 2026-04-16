@@ -11,10 +11,10 @@ export default function OnboardingStep1() {
     useOnboarding(() => router.replace('/'));
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['top', 'left', 'right']}>
-      <View className="border-b border-[#404040] bg-[#1a1a1a] px-6 py-4">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+      <View className="border-b border-[#404040] bg-card px-6 py-4">
         <View className="mb-2 flex-row items-center justify-between">
-          <Text className="text-sm text-[#9CA3AF]">Passo 1 de 3</Text>
+          <Text className="text-sm text-text-muted">Passo 1 de 3</Text>
         </View>
         <View className="flex-row gap-2">
           <View className="h-2 flex-1 rounded-full bg-[#FF6B35]" />

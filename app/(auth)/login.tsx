@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Image, Text, View } from 'react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
+import { Image, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
@@ -12,6 +14,8 @@ import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
 import { markFirstScreenRendered } from '@/lib/bootstrap-diagnostics';
+
+const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Informe seu usuário ou e-mail'),
@@ -24,6 +28,7 @@ export default function LoginScreen() {
   const { signIn } = useAuth();
   const { error } = useToastContext();
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     markFirstScreenRendered('login');
@@ -47,7 +52,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0A0A0A]">
+    <SafeAreaView className="flex-1 bg-background" style={{ backgroundColor: '#0A0A0A' }}>
       <View className="flex-1 items-center justify-center px-6">
         <View className="mb-8">
           <Image
@@ -59,7 +64,7 @@ export default function LoginScreen() {
 
         <Card style={{ width: '100%', maxWidth: 420 }}>
           <Text className="mb-1 text-center text-3xl font-bold text-white">Entrar</Text>
-          <Text className="mb-6 text-center text-sm text-[#9CA3AF]">Faça login para acessar o sistema</Text>
+          <Text className="mb-6 text-center text-sm text-text-muted">Faça login para acessar o sistema</Text>
 
           <Controller
             control={control}
@@ -84,14 +89,26 @@ export default function LoginScreen() {
             control={control}
             name="password"
             render={({ field: { value, onChange } }) => (
-              <Input
-                label="Senha"
-                value={value}
-                onChangeText={onChange}
-                placeholder="Digite sua senha"
-                secureTextEntry
-                style={{ marginBottom: 6 }}
-              />
+              <View style={{ marginBottom: 6 }}>
+                <Text className="mb-2 text-sm text-text-muted">Senha</Text>
+                <View className="h-12 flex-row items-center rounded-xl border border-border bg-surface px-4">
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder="Digite sua senha"
+                    placeholderTextColor="#6B7280"
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    className="flex-1 text-base text-white"
+                  />
+                  <Pressable onPress={() => setShowPassword((prev) => !prev)} hitSlop={8}>
+                    {showPassword
+                      ? <EyeOff size={18} color="#9CA3AF" />
+                      : <Eye size={18} color="#9CA3AF" />
+                    }
+                  </Pressable>
+                </View>
+              </View>
             )}
           />
           {errors.password ? (
@@ -107,7 +124,8 @@ export default function LoginScreen() {
           </Button>
         </Card>
 
-        <Text className="mt-6 text-xs text-[#6B7280]">© {new Date().getFullYear()} Máquina de Vendas - Todos os direitos reservados</Text>
+        <Text className="mt-6 text-xs text-text-faint">© {new Date().getFullYear()} Máquina de Vendas - Todos os direitos reservados</Text>
+        <Text className="mt-1 text-xs text-text-faint">versão {APP_VERSION}</Text>
       </View>
     </SafeAreaView>
   );

@@ -72,10 +72,10 @@ export function EditSaleModal({ isOpen, onClose, sale, userId, onSaved }: EditSa
     <Modal visible={shouldRender} transparent animationType="none" onRequestClose={onClose}>
       <Animated.View className="flex-1 bg-black/70" style={animatedBackdropStyle}>
         <Animated.View
-          className="flex-1 rounded-t-2xl border border-[#2D2D2D] bg-[#111111]"
+          className="flex-1 rounded-t-2xl border border-border bg-surface"
           style={[{ marginTop: Math.max(insets.top + 8, 40), paddingBottom: Math.max(insets.bottom, 8) }, animatedContentStyle]}
         >
-          <View className="flex-row items-center justify-between border-b border-[#2D2D2D] p-4">
+          <View className="flex-row items-center justify-between border-b border-border p-4">
             <View className="flex-row items-center gap-2">
               <DollarSign stroke="#FF6B35" size={20} />
               <Text className="text-lg font-semibold text-white">Editar Venda</Text>
@@ -93,7 +93,7 @@ export function EditSaleModal({ isOpen, onClose, sale, userId, onSaved }: EditSa
                 keyboardType="numeric"
                 placeholder="0,00"
                 placeholderTextColor="#6B7280"
-                className="rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3 text-white"
+                className="rounded-lg border border-border bg-card px-3 py-3 text-white"
               />
             </Field>
 
@@ -103,7 +103,7 @@ export function EditSaleModal({ isOpen, onClose, sale, userId, onSaved }: EditSa
                 onChangeText={setClient}
                 placeholder="Nome do cliente"
                 placeholderTextColor="#6B7280"
-                className="rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3 text-white"
+                className="rounded-lg border border-border bg-card px-3 py-3 text-white"
               />
             </Field>
 
@@ -113,7 +113,7 @@ export function EditSaleModal({ isOpen, onClose, sale, userId, onSaved }: EditSa
                 onChangeText={setProduct}
                 placeholder="Produto vendido"
                 placeholderTextColor="#6B7280"
-                className="rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3 text-white"
+                className="rounded-lg border border-border bg-card px-3 py-3 text-white"
               />
             </Field>
 
@@ -124,7 +124,7 @@ export function EditSaleModal({ isOpen, onClose, sale, userId, onSaved }: EditSa
                 multiline
                 placeholder="Observacoes"
                 placeholderTextColor="#6B7280"
-                className="min-h-[100px] rounded-lg border border-[#2D2D2D] bg-[#1A1A1A] px-3 py-3 text-white"
+                className="min-h-[100px] rounded-lg border border-border bg-card px-3 py-3 text-white"
               />
             </Field>
 
@@ -152,7 +152,7 @@ function Field({ label, icon, children }: { label: string; icon: React.ReactNode
     <View className="mb-3">
       <View className="mb-2 flex-row items-center gap-1">
         {icon}
-        <Text className="text-sm text-[#D1D5DB]">{label}</Text>
+        <Text className="text-sm text-text-secondary">{label}</Text>
       </View>
       {children}
     </View>

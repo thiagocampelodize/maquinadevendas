@@ -122,7 +122,7 @@ export default function VendedorAccountPage() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+      <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
         <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
           <SubmenuHeaderCard
             onBack={() => router.replace('/(vendedor)/perfil')}
@@ -132,7 +132,7 @@ export default function VendedorAccountPage() {
           <SubmenuActionsCard>
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" color="#FF6B35" />
-              <Text className="text-sm text-[#9CA3AF]">Carregando conta...</Text>
+              <Text className="text-sm text-text-muted">Carregando conta...</Text>
             </View>
           </SubmenuActionsCard>
         </ScrollView>
@@ -141,7 +141,7 @@ export default function VendedorAccountPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.replace('/(vendedor)/perfil')}
@@ -149,15 +149,15 @@ export default function VendedorAccountPage() {
           subtitle="Atualize seus dados pessoais e credenciais de acesso."
         />
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="mb-3 text-base font-semibold text-white">Identidade</Text>
           <View className="mb-3 flex-row items-center gap-3">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-[#FF6B35]">
               <Text className="text-base font-bold text-white">{initials}</Text>
             </View>
             <View>
-              <Text className="text-sm text-[#D1D5DB]">Avatar textual</Text>
-              <Text className="text-xs text-[#9CA3AF]">Use a URL abaixo se quiser foto personalizada.</Text>
+              <Text className="text-sm text-text-secondary">Avatar textual</Text>
+              <Text className="text-xs text-text-muted">Use a URL abaixo se quiser foto personalizada.</Text>
             </View>
           </View>
 
@@ -167,7 +167,7 @@ export default function VendedorAccountPage() {
               onChangeText={setName}
               placeholder="Seu nome"
               placeholderTextColor="#6B7280"
-              className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+              className="h-12 rounded-xl border border-border bg-card px-3 text-white"
             />
           </Field>
 
@@ -178,7 +178,7 @@ export default function VendedorAccountPage() {
               keyboardType="phone-pad"
               placeholder="(00) 00000-0000"
               placeholderTextColor="#6B7280"
-              className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+              className="h-12 rounded-xl border border-border bg-card px-3 text-white"
             />
           </Field>
 
@@ -187,7 +187,7 @@ export default function VendedorAccountPage() {
               value={email}
               editable={false}
               placeholderTextColor="#6B7280"
-              className="h-12 rounded-xl border border-[#2D2D2D] bg-[#111111] px-3 text-[#9CA3AF]"
+              className="h-12 rounded-xl border border-border bg-surface px-3 text-text-muted"
             />
           </Field>
 
@@ -197,7 +197,7 @@ export default function VendedorAccountPage() {
               onChangeText={setAvatar}
               placeholder="https://..."
               placeholderTextColor="#6B7280"
-              className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+              className="h-12 rounded-xl border border-border bg-card px-3 text-white"
             />
           </Field>
 
@@ -242,7 +242,7 @@ export default function VendedorAccountPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View className="mb-3">
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       {children}
     </View>
   );
@@ -263,8 +263,8 @@ function PasswordField({
 }) {
   return (
     <View className="mb-3">
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
-      <View className="h-12 flex-row items-center rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3">
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
+      <View className="h-12 flex-row items-center rounded-xl border border-border bg-card px-3">
         <TextInput
           value={value}
           onChangeText={onChangeText}

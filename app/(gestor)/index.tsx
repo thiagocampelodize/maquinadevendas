@@ -3,13 +3,16 @@ import { useRouter } from "expo-router";
 import {
   Animated,
   Platform,
+  Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { getBrazilMonthString } from "@/utils/dateUtils";
 
 import { ForecastAuditModal } from "@/components/home/ForecastAuditModal";
 import { CriticalGoalBanner } from "@/components/home/CriticalGoalBanner";
@@ -23,6 +26,8 @@ import { RepresentativesSummary } from "@/components/home/RepresentativesSummary
 import { RankingModal } from "@/components/home/RankingModal";
 import { GlobalMessageModal } from "@/components/modals/GlobalMessageModal";
 import { SendMessageModal } from "@/components/modals/SendMessageModal";
+import { ErrorScreen } from "@/components/ui/ErrorScreen";
+import { Select } from "@/components/ui/Select";
 import { useEntranceAnimation } from "@/components/ui/useEntranceAnimation";
 import { ENTRANCE_ANIMATION_TOKENS } from "@/constants/animationTokens";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,11 +40,27 @@ import {
 import { companiesService } from "@/services/companiesService";
 import type { SellerRanking } from "@/types";
 
+function buildDashboardMonthOptions() {
+  const options: Array<{ label: string; value: string }> = [];
+  const base = new Date();
+  for (let i = 0; i < 8; i += 1) {
+    const d = new Date(base.getFullYear(), base.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase());
+    options.push({ label, value });
+  }
+  return options;
+}
+
 export default function GestorHomePage() {
   const router = useRouter();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
+
+  const monthOptions = useMemo(() => buildDashboardMonthOptions(), []);
+  const currentMonth = useMemo(() => getBrazilMonthString(), []);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [refreshing, setRefreshing] = useState(false);
   const [isStartingTask, setIsStartingTask] = useState(false);
   const [showRankingModal, setShowRankingModal] = useState(false);
@@ -96,7 +117,7 @@ export default function GestorHomePage() {
     currentDay,
     daysInMonth,
     reload,
-  } = useDashboardData();
+  } = useDashboardData(selectedMonth);
 
   useEffect(() => {
     markFirstScreenRendered("gestor-dashboard");
@@ -141,7 +162,7 @@ export default function GestorHomePage() {
 
   useEffect(() => {
     setIsCriticalBannerDismissed(false);
-  }, [user?.company_id]);
+  }, [user?.company_id, selectedMonth]);
 
   const proportionalGoal = useMemo(
     () => (monthlyGoal > 0 ? monthlyGoal * (currentDay / daysInMonth) : 0),
@@ -257,11 +278,11 @@ export default function GestorHomePage() {
 
   if (!user?.company_id) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black px-8">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8" style={{ backgroundColor: '#0A0A0A' }}>
         <Text className="mb-2 text-xl font-bold text-white">
           Painel de Controle Indisponivel
         </Text>
-        <Text className="text-center text-[#9CA3AF]">
+        <Text className="text-center text-text-muted">
           Sua conta nao tem uma empresa vinculada. E necessario ter uma empresa
           para visualizar o painel.
         </Text>
@@ -270,7 +291,7 @@ export default function GestorHomePage() {
   }
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1 bg-background" style={{ backgroundColor: '#0A0A0A' }}>
       {shouldShowCriticalBanner ? (
         <CriticalGoalBanner
           companyName={companyName}
@@ -296,11 +317,11 @@ export default function GestorHomePage() {
             <Text className="text-[#FF6B35]">Carregando painel...</Text>
           </View>
         ) : error ? (
-          <View className="flex-1 items-center justify-center py-20 px-8">
-            <Text className="text-center text-red-500">
-              Erro ao carregar dados: {error}
-            </Text>
-          </View>
+          <ErrorScreen
+            message={error}
+            onRetry={() => void reload()}
+            fullScreen={false}
+          />
         ) : (
           <>
             {!shouldShowCriticalBanner ? (
@@ -312,6 +333,25 @@ export default function GestorHomePage() {
                 />
               </Animated.View>
             ) : null}
+
+            <View className="rounded-2xl border border-border bg-surface p-3 gap-2">
+              <Select
+                label="Mês de referência"
+                value={selectedMonth}
+                options={monthOptions}
+                onValueChange={setSelectedMonth}
+              />
+              <Pressable
+                disabled={selectedMonth === currentMonth}
+                onPress={() => setSelectedMonth(currentMonth)}
+                className={`h-10 items-center justify-center rounded-lg border border-[#FF6B35] ${selectedMonth === currentMonth ? 'opacity-50' : 'opacity-100'}`}
+              >
+                <Text className="text-sm font-semibold text-[#FF6B35]">Mês atual</Text>
+              </Pressable>
+              <Text className="text-xs text-[#F59E0B]">
+                Ranking e metas individuais exibem o valor configurado para o período selecionado.
+              </Text>
+            </View>
 
             <Animated.View style={metricsEntranceStyle}>
               <HomeMetrics

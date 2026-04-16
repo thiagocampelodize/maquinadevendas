@@ -128,7 +128,7 @@ export default function SubscriptionsManagementPage() {
   const endRow = Math.min(page * pageSize, sessions.length);
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 28 }}>
         <SubmenuHeaderCard
           onBack={() => router.navigate('/(admin)/mais')}
@@ -136,7 +136,7 @@ export default function SubscriptionsManagementPage() {
           subtitle="Sessões de checkout, ativação e status de assinaturas."
         />
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <View className="flex-row flex-wrap gap-2">
             <Tag text={`Ativas: ${summary.active}`} tone="green" />
             <Tag text={`Pendentes: ${summary.pending}`} tone="yellow" />
@@ -145,7 +145,7 @@ export default function SubscriptionsManagementPage() {
           </View>
         </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
             <Text className="mb-3 text-base font-semibold text-white">Filtros de sessão</Text>
           <View className="gap-3">
             <Select label="Status" value={statusFilter} onValueChange={(value) => setStatusFilter(value as CheckoutStatus | 'ALL')} options={statusOptions} />
@@ -162,13 +162,13 @@ export default function SubscriptionsManagementPage() {
           </View>
         </View>
 
-        <View className="rounded-2xl border border-[#2D2D2D] bg-[#111111] p-4">
+        <View className="rounded-2xl border border-border bg-surface p-4">
           <Text className="text-base font-semibold text-white">Sessões de checkout</Text>
-          <Text className="mt-1 text-xs text-[#6B7280]">{`Mostrando ${startRow}-${endRow} de ${sessions.length} sessões`}</Text>
+          <Text className="mt-1 text-xs text-text-faint">{`Mostrando ${startRow}-${endRow} de ${sessions.length} sessões`}</Text>
           {loading ? (
             <View className="py-8">
               <ActivityIndicator color="#FF6B35" />
-              <Text className="mt-2 text-center text-sm text-[#9CA3AF]">Carregando sessões...</Text>
+              <Text className="mt-2 text-center text-sm text-text-muted">Carregando sessões...</Text>
             </View>
           ) : loadError ? (
             <View className="py-8">
@@ -181,10 +181,10 @@ export default function SubscriptionsManagementPage() {
             <>
               <View className="mt-3 gap-2">
                 {paginated.map((session) => (
-                  <View key={session.id} className="rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] p-3">
+                  <View key={session.id} className="rounded-xl border border-border bg-card p-3">
                     <Text className="text-sm font-semibold text-white">{session.customer_name}</Text>
-                    <Text className="mt-1 text-xs text-[#9CA3AF]">{session.customer_email}</Text>
-                    <Text className="text-xs text-[#9CA3AF]">{session.plan_code} • {session.users_count} usuários</Text>
+                    <Text className="mt-1 text-xs text-text-muted">{session.customer_email}</Text>
+                    <Text className="text-xs text-text-muted">{session.plan_code} • {session.users_count} usuários</Text>
                     <View className="mt-2 flex-row items-center justify-between">
                       <Text className="text-xs text-white">{Number(session.cycle_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
                       <Text className={`text-xs font-semibold ${session.status === 'ACTIVATED' ? 'text-[#34D399]' : session.status === 'FAILED' || session.status === 'CANCELLED' ? 'text-[#F87171]' : 'text-[#F59E0B]'}`}>
@@ -195,13 +195,13 @@ export default function SubscriptionsManagementPage() {
                     <View className="mt-3 flex-row gap-2">
                       <Pressable
                         disabled={!session.checkout_url}
-                        className={`h-9 flex-1 items-center justify-center rounded-lg border ${session.checkout_url ? 'border-[#2D2D2D] bg-[#111111]' : 'border-[#2D2D2D] bg-[#1A1A1A]'}`}
+                        className={`h-9 flex-1 items-center justify-center rounded-lg border ${session.checkout_url ? 'border-border bg-surface' : 'border-border bg-card'}`}
                         onPress={() => {
                           if (!session.checkout_url) return;
                           void Linking.openURL(session.checkout_url);
                         }}
                       >
-                        <Text className={`text-xs font-semibold ${session.checkout_url ? 'text-[#D1D5DB]' : 'text-[#6B7280]'}`}>Abrir checkout</Text>
+                        <Text className={`text-xs font-semibold ${session.checkout_url ? 'text-text-secondary' : 'text-text-faint'}`}>Abrir checkout</Text>
                       </Pressable>
                       <Pressable className="h-9 flex-1 items-center justify-center rounded-lg border border-[#FF6B35] bg-[#2A1A12]" onPress={() => void handleResend(session.id)}>
                         {resendingId === session.id ? <ActivityIndicator size="small" color="#FF6B35" /> : <Text className="text-xs font-semibold text-[#FF6B35]">Reenviar ativação</Text>}
@@ -210,20 +210,20 @@ export default function SubscriptionsManagementPage() {
                   </View>
                 ))}
 
-                {sessions.length === 0 ? <Text className="py-6 text-center text-sm text-[#9CA3AF]">Nenhuma sessao encontrada para os filtros.</Text> : null}
+                {sessions.length === 0 ? <Text className="py-6 text-center text-sm text-text-muted">Nenhuma sessao encontrada para os filtros.</Text> : null}
               </View>
 
               <View className="mt-4 flex-row items-center justify-between">
-                <Pressable disabled={page <= 1} onPress={() => setPage((p) => Math.max(1, p - 1))} className={`rounded-lg border px-3 py-2 ${page <= 1 ? 'border-[#2D2D2D] bg-[#1A1A1A]' : 'border-[#FF6B35] bg-[#2A1A12]'}`}>
-                  <Text className={`text-xs font-semibold ${page <= 1 ? 'text-[#6B7280]' : 'text-[#FF6B35]'}`}>Anterior</Text>
+                <Pressable disabled={page <= 1} onPress={() => setPage((p) => Math.max(1, p - 1))} className={`rounded-lg border px-3 py-2 ${page <= 1 ? 'border-border bg-card' : 'border-[#FF6B35] bg-[#2A1A12]'}`}>
+                  <Text className={`text-xs font-semibold ${page <= 1 ? 'text-text-faint' : 'text-[#FF6B35]'}`}>Anterior</Text>
                 </Pressable>
-                <Text className="text-xs text-[#9CA3AF]">Página {page} de {totalPages}</Text>
+                <Text className="text-xs text-text-muted">Página {page} de {totalPages}</Text>
                 <Pressable
                   disabled={page >= totalPages}
                   onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className={`rounded-lg border px-3 py-2 ${page >= totalPages ? 'border-[#2D2D2D] bg-[#1A1A1A]' : 'border-[#FF6B35] bg-[#2A1A12]'}`}
+                  className={`rounded-lg border px-3 py-2 ${page >= totalPages ? 'border-border bg-card' : 'border-[#FF6B35] bg-[#2A1A12]'}`}
                 >
-                  <Text className={`text-xs font-semibold ${page >= totalPages ? 'text-[#6B7280]' : 'text-[#FF6B35]'}`}>Próxima</Text>
+                  <Text className={`text-xs font-semibold ${page >= totalPages ? 'text-text-faint' : 'text-[#FF6B35]'}`}>Próxima</Text>
                 </Pressable>
               </View>
             </>
@@ -259,14 +259,14 @@ function Field({
 }) {
   return (
     <View>
-      <Text className="mb-2 text-sm text-[#D1D5DB]">{label}</Text>
+      <Text className="mb-2 text-sm text-text-secondary">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor="#6B7280"
         autoCapitalize="none"
-        className="h-12 rounded-xl border border-[#2D2D2D] bg-[#1A1A1A] px-3 text-white"
+        className="h-12 rounded-xl border border-border bg-card px-3 text-white"
       />
     </View>
   );

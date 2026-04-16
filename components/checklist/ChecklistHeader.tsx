@@ -6,7 +6,7 @@ interface ChecklistHeaderProps {
 
 export function ChecklistHeader({ userRole }: ChecklistHeaderProps) {
   return (
-    <View className="rounded-xl border border-[#404040] bg-[#1a1a1a] p-5">
+    <View className="rounded-xl border border-[#404040] bg-card p-5">
       <Text className="mb-1 text-2xl font-semibold text-white">
         {userRole === 'VENDEDOR' ? 'Lancamento de Vendas' : 'Rotina Comercial Lucrativa'}
       </Text>

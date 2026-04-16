@@ -13,7 +13,7 @@ export default function GestorTabsLayout() {
       screenOptions={{
         headerShown: true,
         header: () => (
-          <View className="border-b border-[#2D2D2D] bg-black px-4 pb-2 pt-0">
+          <View className="border-b border-border bg-background px-4 pb-2 pt-0">
             <ModuleHeader withInset />
           </View>
         ),
